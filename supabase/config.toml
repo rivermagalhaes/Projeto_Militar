@@ -1,0 +1,7 @@
+project_id = "ucmllofejntssnkbuajb"
+
+[functions.create-monitor]
+verify_jwt = false
+
+[functions.get-signed-url]
+verify_jwt = false
