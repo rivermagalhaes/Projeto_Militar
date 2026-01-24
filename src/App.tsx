@@ -6,7 +6,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { MfaProtectedRoute } from "@/components/MfaProtectedRoute";
-import { SupabaseTest } from "@/components/SupabaseTest";
+import { Layout } from "@/components/Layout";
+
 
 // Existing pages
 import Dashboard from "./pages/Dashboard";
@@ -27,17 +28,18 @@ function App() {
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <SupabaseTest />
-            <Routes>
-              {/* Redirect root to dashboard */}
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-              <Route path="/dashboard" element={<MfaProtectedRoute><Dashboard /></MfaProtectedRoute>} />
-              <Route path="/alunos" element={<MfaProtectedRoute><Alunos /></MfaProtectedRoute>} />
-              <Route path="/alunos/:id" element={<MfaProtectedRoute><AlunoDetalhe /></MfaProtectedRoute>} />
-              <Route path="/aniversariantes" element={<MfaProtectedRoute><Aniversariantes /></MfaProtectedRoute>} />
-              <Route path="/agenda" element={<MfaProtectedRoute><Agenda /></MfaProtectedRoute>} />
-            </Routes>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/alunos" element={<Alunos />} />
+                <Route path="/alunos/:id" element={<AlunoDetalhe />} />
+                <Route path="/aniversariantes" element={<Aniversariantes />} />
+                <Route path="/agenda" element={<Agenda />} />
+              </Routes>
+            </Layout>
           </TooltipProvider>
         </AuthProvider>
       </BrowserRouter>
