@@ -303,7 +303,7 @@ export default function Dashboard() {
               >
                 Início
               </motion.h1>
-              <p className="text-muted-foreground mt-1">Sistema de Monitores - CMTO-V Diaconízio Bezerra da Silva</p>
+              <p className="text-muted-foreground mt-1">Sistema de Monitores - CMTO Diaconízio Bezerra da Silva</p>
             </div>
           </div>
           <BackupExport isAdmin={isAdmin} />

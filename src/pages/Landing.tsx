@@ -49,6 +49,7 @@ export default function Landing() {
                 <p className="text-secondary-foreground/80 text-lg max-w-2xl mx-auto">
                     Colégio Militar do Tocantins - Diaconízio Bezerra da Silva
                     <br />Sistema de Gestão Escolar Militar
+                    <br />Paraíso do Tocantins-TO
                 </p>
             </motion.div>
 
