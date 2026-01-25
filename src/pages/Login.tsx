@@ -97,6 +97,21 @@ export default function Login() {
                         </Button>
                     </form>
 
+                    <div className="mt-8 pt-6 border-t border-olive/10">
+                        <div className="bg-olive/5 rounded-lg p-4 border border-olive/10">
+                            <h3 className="text-xs font-bold text-navy uppercase mb-2 flex items-center gap-2">
+                                <Shield size={14} className="text-gold" /> Dica de Acesso ao Sistema
+                            </h3>
+                            <p className="text-xs text-secondary-foreground/70 leading-relaxed">
+                                Para fins de teste e demonstração, você pode utilizar:
+                                <br />
+                                <span className="font-bold text-navy">E-mail:</span> qualquer-um@cmto.com
+                                <br />
+                                <span className="font-bold text-navy">Senha:</span> 123456
+                            </p>
+                        </div>
+                    </div>
+
                     <Button
                         variant="ghost"
                         onClick={() => navigate('/')}

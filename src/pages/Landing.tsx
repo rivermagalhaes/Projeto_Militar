@@ -95,7 +95,7 @@ export default function Landing() {
                 transition={{ delay: 1 }}
                 className="mt-12 text-sm text-secondary-foreground/60"
             >
-                © 2026 CMTO | by Cândigo-Magalhães & Araújo-Todos os direitos reservados
+                © 2026 CMTO | by Cândigo, Magalhães & Araújo-Todos os direitos reservados
             </motion.p>
         </div>
     );
