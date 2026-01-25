@@ -65,23 +65,23 @@ export default function AlunoDetalhe() {
   const [turmas, setTurmas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
+
   // Separated history states
   const [anotacoesHist, setAnotacoesHist] = useState<HistoricoItem[]>([]);
   const [termosHist, setTermosHist] = useState<HistoricoItem[]>([]);
   const [elogiosHist, setElogiosHist] = useState<HistoricoItem[]>([]);
   const [faltasHist, setFaltasHist] = useState<HistoricoItem[]>([]);
-  
+
   // Year filter
   const [filterAno, setFilterAno] = useState<string>('all');
   const [anosDisponiveis, setAnosDisponiveis] = useState<number[]>([]);
-  
+
   const [anotacaoTipo, setAnotacaoTipo] = useState<string>('');
   const [anotacaoDesc, setAnotacaoDesc] = useState('');
   const [elogioTipo, setElogioTipo] = useState<string>('');
   const [elogioDesc, setElogioDesc] = useState('');
   const [novaTurma, setNovaTurma] = useState('');
-  
+
   // Faltas form state
   const [faltaDataInicio, setFaltaDataInicio] = useState<Date | undefined>();
   const [faltaDataFim, setFaltaDataFim] = useState<Date | undefined>();
@@ -113,14 +113,14 @@ export default function AlunoDetalhe() {
       supabase.from('faltas').select('*').eq('aluno_id', id).order('created_at', { ascending: false }),
       supabase.from('profiles').select('id, nome'),
     ]);
-    
+
     // Create a lookup map for profiles
     const profilesMap = new Map<string, string>();
     profiles.data?.forEach(p => profilesMap.set(p.id, p.nome));
-    
+
     // Collect all years
     const anos = new Set<number>();
-    
+
     // Map anotações
     const anotacoesFormatted: HistoricoItem[] = (anotacoes.data || []).map(a => {
       const ano = a.ano_letivo || new Date(a.created_at).getFullYear();
@@ -137,7 +137,7 @@ export default function AlunoDetalhe() {
         profile: a.lancado_por ? { nome: profilesMap.get(a.lancado_por) || '-' } : undefined
       };
     });
-    
+
     // Map termos
     const termosFormatted: HistoricoItem[] = (termos.data || []).map(t => {
       const ano = new Date(t.created_at).getFullYear();
@@ -154,7 +154,7 @@ export default function AlunoDetalhe() {
         profile: undefined
       };
     });
-    
+
     // Map elogios
     const elogiosFormatted: HistoricoItem[] = (elogios.data || []).map(e => {
       const ano = e.ano_letivo || new Date(e.created_at).getFullYear();
@@ -171,7 +171,7 @@ export default function AlunoDetalhe() {
         profile: e.lancado_por ? { nome: profilesMap.get(e.lancado_por) || '-' } : undefined
       };
     });
-    
+
     // Map faltas
     const faltasFormatted: HistoricoItem[] = (faltas.data || []).map(f => {
       const ano = f.ano_letivo || new Date(f.created_at).getFullYear();
@@ -188,7 +188,7 @@ export default function AlunoDetalhe() {
         profile: f.lancado_por ? { nome: profilesMap.get(f.lancado_por) || '-' } : undefined
       };
     });
-    
+
     setAnotacoesHist(anotacoesFormatted);
     setTermosHist(termosFormatted);
     setElogiosHist(elogiosFormatted);
@@ -201,7 +201,7 @@ export default function AlunoDetalhe() {
     const { data: termos } = await supabase.from('termos').select('valor_desconto').eq('aluno_id', id);
 
     let nota = 8.0;
-    
+
     elogios?.forEach(e => {
       nota += ELOGIO_VALORES[e.tipo] || 0;
     });
@@ -223,17 +223,17 @@ export default function AlunoDetalhe() {
       return;
     }
     setSaving(true);
-    
+
     const anoLetivo = getCurrentAnoLetivo();
-    
-    await supabase.from('anotacoes').insert({ 
-      aluno_id: id as string, 
-      tipo: anotacaoTipo as 'leve' | 'media' | 'grave' | 'gravissima', 
-      descricao: anotacaoDesc, 
+
+    await supabase.from('anotacoes').insert({
+      aluno_id: id as string,
+      tipo: anotacaoTipo as 'leve' | 'media' | 'grave' | 'gravissima',
+      descricao: anotacaoDesc,
       lancado_por: user?.id,
       ano_letivo: anoLetivo
     });
-    
+
     // Verificar acúmulos e aplicar termos
     const { data: anotacoes } = await supabase.from('anotacoes').select('tipo').eq('aluno_id', id as string);
     const leves = anotacoes?.filter(a => a.tipo === 'leve').length || 0;
@@ -244,7 +244,7 @@ export default function AlunoDetalhe() {
     } else if (anotacaoTipo === 'gravissima') {
       await supabase.from('termos').insert({ aluno_id: id, tipo: 'gravissimo', valor_desconto: 1.00, motivo: 'Anotação gravíssima' });
     }
-    
+
     // Acúmulo de 5 leves = termo leve
     if (leves >= 5 && leves % 5 === 0) {
       await supabase.from('termos').insert({ aluno_id: id, tipo: 'leve', valor_desconto: 0.20, motivo: '5 anotações leves acumuladas' });
@@ -269,13 +269,13 @@ export default function AlunoDetalhe() {
   const handleElogio = async () => {
     if (!elogioTipo) { toast({ title: 'Selecione o tipo', variant: 'destructive' }); return; }
     setSaving(true);
-    
+
     const anoLetivo = getCurrentAnoLetivo();
-    
-    await supabase.from('elogios').insert({ 
-      aluno_id: id as string, 
-      tipo: elogioTipo as 'coletivo' | 'individual' | 'mencao_honrosa', 
-      descricao: elogioDesc, 
+
+    await supabase.from('elogios').insert({
+      aluno_id: id as string,
+      tipo: elogioTipo as 'coletivo' | 'individual' | 'mencao_honrosa',
+      descricao: elogioDesc,
       lancado_por: user?.id,
       ano_letivo: anoLetivo
     });
@@ -346,9 +346,9 @@ export default function AlunoDetalhe() {
       return;
     }
     setSaving(true);
-    
+
     const anoLetivo = getCurrentAnoLetivo();
-    
+
     const { error } = await supabase.from('faltas').insert({
       aluno_id: id,
       data_inicio: format(faltaDataInicio, 'yyyy-MM-dd'),
@@ -358,7 +358,7 @@ export default function AlunoDetalhe() {
       lancado_por: user?.id,
       ano_letivo: anoLetivo
     });
-    
+
     if (error) {
       toast({ title: 'Erro ao registrar falta', variant: 'destructive' });
     } else {
@@ -381,11 +381,11 @@ export default function AlunoDetalhe() {
   // Render history table
   const renderHistoryTable = (items: HistoricoItem[], category: string) => {
     const filteredItems = filterByYear(items);
-    
+
     if (filteredItems.length === 0) {
       return <p className="text-muted-foreground py-4">Nenhum registro {filterAno !== 'all' ? `em ${filterAno}` : ''}</p>;
     }
-    
+
     return (
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -404,8 +404,8 @@ export default function AlunoDetalhe() {
           <tbody>
             <AnimatePresence mode="popLayout">
               {filteredItems.map(item => (
-                <motion.tr 
-                  key={`${item.category}-${item.id}`} 
+                <motion.tr
+                  key={`${item.category}-${item.id}`}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 10 }}
@@ -420,18 +420,18 @@ export default function AlunoDetalhe() {
                   <td className="p-2">
                     <span className={cn(
                       'inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium',
-                      item.category === 'elogio' ? 'bg-primary/20 text-primary' : 
-                      item.category === 'termo' ? 'bg-destructive/20 text-destructive' : 
-                      item.category === 'falta' ? 'bg-blue-500/20 text-blue-600' :
-                      'bg-orange-500/20 text-orange-600'
+                      item.category === 'elogio' ? 'bg-primary/20 text-primary' :
+                        item.category === 'termo' ? 'bg-destructive/20 text-destructive' :
+                          item.category === 'falta' ? 'bg-blue-500/20 text-blue-600' :
+                            'bg-orange-500/20 text-orange-600'
                     )}>
-                      {item.category === 'elogio' ? <Award className="h-3 w-3" /> : 
-                       item.category === 'termo' ? <FileText className="h-3 w-3" /> : 
-                       item.category === 'falta' ? <Calendar className="h-3 w-3" /> :
-                       <AlertTriangle className="h-3 w-3" />}
-                      {item.category === 'elogio' ? 'Elogio' : 
-                       item.category === 'termo' ? 'Termo' : 
-                       item.category === 'falta' ? 'Falta' : 'Anotação'}
+                      {item.category === 'elogio' ? <Award className="h-3 w-3" /> :
+                        item.category === 'termo' ? <FileText className="h-3 w-3" /> :
+                          item.category === 'falta' ? <Calendar className="h-3 w-3" /> :
+                            <AlertTriangle className="h-3 w-3" />}
+                      {item.category === 'elogio' ? 'Elogio' :
+                        item.category === 'termo' ? 'Termo' :
+                          item.category === 'falta' ? 'Falta' : 'Anotação'}
                     </span>
                   </td>
                   <td className="p-2">{item.label}</td>
@@ -440,8 +440,8 @@ export default function AlunoDetalhe() {
                   </td>
                   <td className={cn(
                     'p-2 text-right font-mono',
-                    item.peso.startsWith('+') ? 'text-primary' : 
-                    item.peso === '0.00' ? 'text-muted-foreground' : 'text-destructive'
+                    item.peso.startsWith('+') ? 'text-primary' :
+                      item.peso === '0.00' ? 'text-muted-foreground' : 'text-destructive'
                   )}>
                     {item.peso}
                   </td>
@@ -482,7 +482,7 @@ export default function AlunoDetalhe() {
   if (!aluno) return <Layout><p>Aluno não encontrado</p></Layout>;
 
   // Combine anotações e termos for the first tab
-  const anotacoesETermos = [...anotacoesHist, ...termosHist].sort((a, b) => 
+  const anotacoesETermos = [...anotacoesHist, ...termosHist].sort((a, b) =>
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
@@ -490,7 +490,7 @@ export default function AlunoDetalhe() {
     <Layout>
       <div className="space-y-6">
         <Button variant="ghost" onClick={() => navigate('/alunos')}><ArrowLeft className="mr-2 h-4 w-4" />Voltar</Button>
-        
+
         <div className="card-military p-6">
           {/* Badge Matrícula no topo */}
           {aluno.matricula && (
@@ -504,15 +504,15 @@ export default function AlunoDetalhe() {
 
           <div className="flex flex-col md:flex-row md:items-start gap-6">
             {/* Avatar Foto */}
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05 }}
               className="relative mx-auto md:mx-0 w-32 h-32 rounded-full overflow-hidden border-4 border-accent bg-muted shrink-0 cursor-pointer group shadow-xl"
             >
               {aluno.foto_url ? (
-                <img 
-                  src={aluno.foto_url} 
-                  alt={aluno.nome} 
-                  className="w-full h-full object-cover transition-transform group-hover:scale-110" 
+                <img
+                  src={aluno.foto_url}
+                  alt={aluno.nome}
+                  className="w-full h-full object-cover transition-transform group-hover:scale-110"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
@@ -533,20 +533,20 @@ export default function AlunoDetalhe() {
               <p className="text-sm text-muted-foreground">Nascimento: {aluno.data_nascimento.split('-').reverse().join('/')}</p>
               {aluno.cpf && <p className="text-sm text-muted-foreground">CPF: {aluno.cpf}</p>}
             </div>
-            
+
             {/* Grade Display - Large centered card com animações e mensagem */}
             <div className="bg-muted/50 rounded-xl p-6 border border-border min-w-[280px]">
               <p className="text-sm text-muted-foreground mb-3 text-center font-medium">Nota Disciplinar</p>
-              <GradeDisplay 
-                nota={Number(aluno.nota_disciplinar)} 
-                size="lg" 
-                showProgress 
-                showBadge 
-                showMessage 
+              <GradeDisplay
+                nota={Number(aluno.nota_disciplinar)}
+                size="lg"
+                showProgress
+                showBadge
+                showMessage
               />
             </div>
           </div>
-          
+
           <div className="flex gap-3 mt-6">
             <Dialog>
               <DialogTrigger asChild><Button variant="outline">Mudar Turma</Button></DialogTrigger>
@@ -646,10 +646,10 @@ export default function AlunoDetalhe() {
                   <SelectItem value="Outros">Outros</SelectItem>
                 </SelectContent>
               </Select>
-              <Textarea 
-                placeholder="Detalhes adicionais (opcional)" 
-                value={faltaDetalhes} 
-                onChange={e => setFaltaDetalhes(e.target.value)} 
+              <Textarea
+                placeholder="Detalhes adicionais (opcional)"
+                value={faltaDetalhes}
+                onChange={e => setFaltaDetalhes(e.target.value)}
               />
               <Button onClick={handleFalta} disabled={saving} className="btn-military">
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar Falta'}
@@ -659,14 +659,14 @@ export default function AlunoDetalhe() {
         </Tabs>
 
         {/* Histórico Separado em Abas */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="card-military p-4"
         >
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
             <h3 className="font-serif font-bold text-lg">Histórico Completo</h3>
-            
+
             {/* Filtro por ano */}
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-muted-foreground" />
@@ -683,7 +683,7 @@ export default function AlunoDetalhe() {
               </Select>
             </div>
           </div>
-          
+
           <Tabs defaultValue="anotacoes-termos" className="w-full">
             <TabsList className="w-full grid grid-cols-3">
               <TabsTrigger value="anotacoes-termos" className="flex items-center gap-2">
@@ -699,7 +699,7 @@ export default function AlunoDetalhe() {
                 Faltas ({filterByYear(faltasHist).length})
               </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="anotacoes-termos" className="mt-4">
               <motion.div
                 initial={{ opacity: 0 }}
@@ -709,7 +709,7 @@ export default function AlunoDetalhe() {
                 {renderHistoryTable(anotacoesETermos, 'anotacoes-termos')}
               </motion.div>
             </TabsContent>
-            
+
             <TabsContent value="elogios" className="mt-4">
               <motion.div
                 initial={{ opacity: 0 }}
@@ -719,7 +719,7 @@ export default function AlunoDetalhe() {
                 {renderHistoryTable(elogiosHist, 'elogios')}
               </motion.div>
             </TabsContent>
-            
+
             <TabsContent value="faltas" className="mt-4">
               <motion.div
                 initial={{ opacity: 0 }}

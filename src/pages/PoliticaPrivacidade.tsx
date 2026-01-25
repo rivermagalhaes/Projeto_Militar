@@ -26,7 +26,7 @@ export default function PoliticaPrivacidade() {
                     <section className="space-y-4">
                         <h2 className="text-xl font-bold">1. Introdução</h2>
                         <p className="text-muted-foreground leading-relaxed">
-                            O Colégio Militar do Tocantins (CMTO-V) está comprometido com a transparência e a segurança dos dados pessoais de seus alunos, pais, responsáveis e colaboradores, em conformidade com a Lei nº 13.709/2018 (LGPD).
+                            O Colégio Militar do Tocantins (CMTO) está comprometido com a transparência e a segurança dos dados pessoais de seus alunos, pais, responsáveis e colaboradores, em conformidade com a Lei nº 13.709/2018 (LGPD).
                         </p>
                     </section>
 

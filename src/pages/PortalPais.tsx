@@ -149,7 +149,7 @@ export default function PortalPais() {
                 <div className="text-center mb-8">
                     <img src={brasao} alt="Brasão CMTO" className="h-24 w-auto mx-auto mb-4 drop-shadow-2xl" />
                     <h1 className="text-3xl font-serif font-bold text-white">Portal da Família</h1>
-                    <p className="text-blue-200">Acompanhamento Escolar CMTO-V</p>
+                    <p className="text-blue-200">Acompanhamento Escolar CMTO</p>
                 </div>
 
                 <div className="bg-white rounded-xl shadow-2xl p-8 border-t-8 border-accent overflow-hidden relative">

@@ -327,7 +327,7 @@ export default function Alunos() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-serif font-bold text-foreground">Alunos</h1>
-          <p className="text-muted-foreground mt-1">Gerencie os alunos do CMTO-V Diaconízio Bezerra da Silva</p>
+          <p className="text-muted-foreground mt-1">Gerencie os alunos do  Diaconízio Bezerra da Silva</p>
         </div>
 
         <Dialog open={modalOpen} onOpenChange={(open) => { setModalOpen(open); if (!open) resetForm(); }}>

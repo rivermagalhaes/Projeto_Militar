@@ -158,7 +158,7 @@ export default function Agenda() {
             <Calendar className="h-8 w-8 text-accent" />
             Agenda
           </h1>
-          <p className="text-muted-foreground mt-1">Eventos e informativos do CMTO-V Diaconízio Bezerra da Silva</p>
+          <p className="text-muted-foreground mt-1">Eventos e informativos do CMTO Diaconízio Bezerra da Silva</p>
         </div>
 
         <div className="flex items-center gap-3">

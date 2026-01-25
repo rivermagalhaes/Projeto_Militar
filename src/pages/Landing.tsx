@@ -45,7 +45,7 @@ export default function Landing() {
                 className="text-center mb-12"
             >
                 <img src={brasao} alt="Brasão CMTO" className="h-32 w-auto mx-auto mb-6 drop-shadow-2xl animate-float" />
-                <h1 className="text-4xl md:text-5xl font-serif font-bold text-gold mb-2 text-glow-gold">CMTO-V</h1>
+                <h1 className="text-4xl md:text-5xl font-serif font-bold text-gold mb-2 text-glow-gold">CMTO</h1>
                 <p className="text-secondary-foreground/80 text-lg max-w-2xl mx-auto">
                     Colégio Militar do Tocantins - Diaconízio Bezerra da Silva
                     <br />Sistema de Gestão Escolar Militar
@@ -94,7 +94,7 @@ export default function Landing() {
                 transition={{ delay: 1 }}
                 className="mt-12 text-sm text-secondary-foreground/60"
             >
-                © 2024 CMTO - V | Todos os direitos reservados
+                © 2026 CMTO | by Cândigo-Magalhães & Araújo-Todos os direitos reservados
             </motion.p>
         </div>
     );
