@@ -37,9 +37,9 @@ const adminOnlyItems = [
   { path: '/security-audit', label: 'Segurança', icon: ShieldCheck },
 ];
 
-// Items visible to monitors (shows as "Acesso Pais" for monitors)
+// Items visible to monitors (management of parent access)
 const monitorItems = [
-  { path: '/monitores', label: 'Acesso Pais', icon: Users },
+  { path: '/pais-alunos', label: 'Gestão Pais', icon: Users },
 ];
 
 export function Navbar() {
@@ -55,9 +55,9 @@ export function Navbar() {
 
   // Admins see all items including "Monitores"
   // Monitors see nav items plus "Acesso Pais" link
-  const allItems = isAdmin 
-    ? [...navItems, ...adminOnlyItems] 
-    : isMonitor 
+  const allItems = isAdmin
+    ? [...navItems, ...adminOnlyItems]
+    : isMonitor
       ? [...navItems, ...monitorItems]
       : navItems;
 
@@ -91,15 +91,14 @@ export function Navbar() {
             {allItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
-              
+
               return (
                 <Link key={item.path} to={item.path}>
                   <motion.div
-                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
-                      isActive
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${isActive
                         ? 'bg-[#D4AF37]/20 text-[#D4AF37]'
                         : 'text-gray-200 hover:bg-white/10 hover:text-[#D4AF37]'
-                    }`}
+                      }`}
                     whileHover={{ scale: 1.02, boxShadow: '0 0 10px rgba(212, 175, 55, 0.3)' }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -109,7 +108,7 @@ export function Navbar() {
                 </Link>
               );
             })}
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -126,15 +125,14 @@ export function Navbar() {
             {allItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
-              
+
               return (
                 <Link key={item.path} to={item.path} title={item.label}>
                   <motion.div
-                    className={`flex items-center justify-center p-2 rounded-md transition-all duration-200 ${
-                      isActive
+                    className={`flex items-center justify-center p-2 rounded-md transition-all duration-200 ${isActive
                         ? 'bg-[#D4AF37]/20 text-[#D4AF37]'
                         : 'text-gray-200 hover:bg-white/10 hover:text-[#D4AF37]'
-                    }`}
+                      }`}
                     whileHover={{ scale: 1.1, boxShadow: '0 0 10px rgba(212, 175, 55, 0.3)' }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -143,7 +141,7 @@ export function Navbar() {
                 </Link>
               );
             })}
-            
+
             <Button
               variant="ghost"
               size="icon"
@@ -179,7 +177,7 @@ export function Navbar() {
                 {allItems.map((item, index) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
-                  
+
                   return (
                     <motion.div
                       key={item.path}
@@ -192,11 +190,10 @@ export function Navbar() {
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <div
-                          className={`flex items-center gap-2 px-3 py-2.5 rounded-md text-sm font-medium transition-all ${
-                            isActive
+                          className={`flex items-center gap-2 px-3 py-2.5 rounded-md text-sm font-medium transition-all ${isActive
                               ? 'bg-[#D4AF37]/20 text-[#D4AF37]'
                               : 'text-gray-200 hover:bg-white/10 hover:text-[#D4AF37]'
-                          }`}
+                            }`}
                         >
                           <Icon className="h-4 w-4" />
                           <span>{item.label}</span>
@@ -206,7 +203,7 @@ export function Navbar() {
                   );
                 })}
               </div>
-              
+
               <motion.button
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

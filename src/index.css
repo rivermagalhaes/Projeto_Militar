@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Slab:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -120,13 +122,19 @@
     font-family: 'Inter', system-ui, sans-serif;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: 'Roboto Slab', serif;
     @apply font-bold tracking-tight;
   }
 }
 
 @layer components {
+
   /* Card militar com borda dourada */
   .card-military {
     @apply bg-card rounded-lg border-l-4 border-l-accent shadow-md transition-all duration-300;
@@ -244,18 +252,24 @@
 
 /* Animações customizadas */
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 5px hsl(45 65% 52% / 0.3);
   }
+
   50% {
     box-shadow: 0 0 25px hsl(45 65% 52% / 0.6);
   }
@@ -266,6 +280,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -273,39 +288,74 @@
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
-  20%, 40%, 60%, 80% { transform: translateX(3px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-3px);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(3px);
+  }
 }
 
 @keyframes bounce-subtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 @keyframes glow-gold-intense {
-  0%, 100% { 
+
+  0%,
+  100% {
     box-shadow: 0 0 10px rgba(212, 175, 55, 0.4), 0 0 20px rgba(212, 175, 55, 0.2);
     filter: brightness(1);
   }
-  50% { 
+
+  50% {
     box-shadow: 0 0 25px rgba(212, 175, 55, 0.7), 0 0 50px rgba(212, 175, 55, 0.4);
     filter: brightness(1.1);
   }
 }
 
 @keyframes glow-danger {
-  0%, 100% { 
+
+  0%,
+  100% {
     box-shadow: 0 0 5px rgba(139, 0, 0, 0.3);
   }
-  50% { 
+
+  50% {
     box-shadow: 0 0 20px rgba(139, 0, 0, 0.6);
   }
 }
 
 @keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .animate-float {
@@ -346,10 +396,12 @@
     opacity: 0;
     transform: translate(0, 0) scale(0);
   }
+
   50% {
     opacity: 1;
     transform: translate(var(--tx, 20px), var(--ty, -20px)) scale(1);
   }
+
   100% {
     opacity: 0;
     transform: translate(calc(var(--tx, 20px) * 2), calc(var(--ty, -20px) * 2)) scale(0);
@@ -359,6 +411,3 @@
 .particle {
   animation: particle-float 2s ease-out infinite;
 }
-
-/* Google Fonts import */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Slab:wght@400;500;600;700&display=swap');

@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from 'react';
-import { Layout } from '@/components/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -43,24 +42,24 @@ export default function Dashboard() {
   const [informativos, setInformativos] = useState<Informativo[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingInfo, setLoadingInfo] = useState(true);
-  
+
   // Modal states
   const [modalOpen, setModalOpen] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  
+
   // Form states
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [dataEvento, setDataEvento] = useState<Date>();
   const [imagemFile, setImagemFile] = useState<File | null>(null);
   const [imagemPreview, setImagemPreview] = useState<string | null>(null);
-  
+
   // Filter
   const [filterAno, setFilterAno] = useState<string>('all');
   const [anosDisponiveis, setAnosDisponiveis] = useState<number[]>([]);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -128,7 +127,7 @@ export default function Dashboard() {
         .from('informativos')
         .select('*')
         .order('data_evento', { ascending: false });
-      
+
       if (data) {
         setInformativos(data);
         const anos = [...new Set(data.map(i => new Date(i.data_evento).getFullYear()))].sort((a, b) => b - a);
@@ -227,64 +226,62 @@ export default function Dashboard() {
   // Conteúdo para usuários sem role (nem admin nem monitor)
   if (!isAdmin && !isMonitor) {
     return (
-      <Layout>
-        <div className="space-y-8">
-          <div className="flex items-center gap-6">
-            <motion.img
-              src={brasao}
-              alt="Brasão CMTO"
-              className="h-20 w-auto hidden md:block"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-            />
-            <div>
-              <motion.h1
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-3xl font-serif font-bold text-foreground"
-              >
-                Início
-              </motion.h1>
-              <p className="text-muted-foreground mt-1">Sistema de Monitores - CMTO-V Diaconízio Bezerra da Silva</p>
+      <div className="space-y-8">
+        <div className="flex items-center gap-6">
+          <motion.img
+            src={brasao}
+            alt="Brasão CMTO"
+            className="h-20 w-auto hidden md:block"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          />
+          <div>
+            <motion.h1
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-3xl font-serif font-bold text-foreground"
+            >
+              Início
+            </motion.h1>
+            <p className="text-muted-foreground mt-1">Sistema de Monitores - CMTO-V Diaconízio Bezerra da Silva</p>
+          </div>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="card-military p-8"
+        >
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-full bg-amber-500/20">
+              <Shield className="h-8 w-8 text-amber-500" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-serif font-bold mb-2">Acesso Restrito - LGPD Compliance</h2>
+              <p className="text-muted-foreground mb-4">
+                Olá, {user?.email}! Como monitor, você tem acesso limitado para proteção de dados pessoais de menores (Lei nº 13.709/2018 - LGPD).
+              </p>
+              <div className="bg-muted/50 rounded-lg p-4 border border-border">
+                <h3 className="font-semibold mb-2 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  Recursos disponíveis:
+                </h3>
+                <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                  <li>Visualização da Agenda</li>
+                  <li>Acesso ao Manual do Sistema</li>
+                  <li>Consulta a aniversariantes</li>
+                </ul>
+              </div>
             </div>
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="card-military p-8"
-          >
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-full bg-amber-500/20">
-                <Shield className="h-8 w-8 text-amber-500" />
-              </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-serif font-bold mb-2">Acesso Restrito - LGPD Compliance</h2>
-                <p className="text-muted-foreground mb-4">
-                  Olá, {user?.email}! Como monitor, você tem acesso limitado para proteção de dados pessoais de menores (Lei nº 13.709/2018 - LGPD).
-                </p>
-                <div className="bg-muted/50 rounded-lg p-4 border border-border">
-                  <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-amber-500" />
-                    Recursos disponíveis:
-                  </h3>
-                  <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                    <li>Visualização da Agenda</li>
-                    <li>Acesso ao Manual do Sistema</li>
-                    <li>Consulta a aniversariantes</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </Layout>
+        </motion.div>
+      </div>
     );
   }
 
   return (
-    <Layout>
+    <>
       <MfaReminder isAdmin={isAdmin} />
       <div className="space-y-8">
         {/* Header */}
@@ -502,6 +499,6 @@ export default function Dashboard() {
           )}
         </DialogContent>
       </Dialog>
-    </Layout>
+    </>
   );
 }
