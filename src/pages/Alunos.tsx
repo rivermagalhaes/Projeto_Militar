@@ -225,7 +225,7 @@ export default function Alunos() {
         day, month, year
       });
 
-      const { error } = await supabase
+      const { data: newAluno, error } = await supabase
         .from('alunos')
         .insert({
           nome: formNome.trim(),
@@ -238,7 +238,9 @@ export default function Alunos() {
           foto_url: fotoUrl,
           consentimento_lgpd: formConsentimentoLgpd,
           consentimento_imagem: formConsentimentoImagem,
-        });
+        })
+        .select()
+        .single();
 
       if (error) {
         if (error.code === '23505') {
@@ -250,7 +252,23 @@ export default function Alunos() {
         } else {
           throw error;
         }
-      } else {
+      } else if (newAluno) {
+        // Automatically create parent portal access
+        const { error: parentError } = await supabase
+          .from('pais_alunos')
+          .insert({
+            aluno_id: newAluno.id,
+            matricula: formMatricula.trim(),
+            data_nascimento_text: format(formDataNascimento, 'dd/MM/yyyy'),
+            nome_responsavel: `Responsável de ${formNome.trim().split(' ')[0]}`,
+            consentimento_visualizacao: true
+          });
+
+        if (parentError) {
+          console.error('Erro ao criar acesso dos pais:', parentError);
+          // Don't fail the whole process, just log it
+        }
+
         // Log LGPD audit
         await supabase.from('auditoria_lgpd').insert({
           acao: 'CADASTRO_ALUNO',
@@ -258,7 +276,7 @@ export default function Alunos() {
           dados_novos: { matricula: formMatricula, consentimento_lgpd: true, consentimento_imagem: formConsentimentoImagem }
         });
 
-        toast({ title: 'Sucesso!', description: 'Aluno cadastrado com sucesso.' });
+        toast({ title: 'Sucesso!', description: 'Aluno cadastrado e acesso da família gerado.' });
         setModalOpen(false);
         resetForm();
         fetchAlunos();

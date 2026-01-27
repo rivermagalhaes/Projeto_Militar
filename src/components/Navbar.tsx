@@ -56,7 +56,7 @@ export function Navbar() {
   // Admins see all items including "Monitores"
   // Monitors see nav items plus "Acesso Pais" link
   const allItems = isAdmin
-    ? [...navItems, ...adminOnlyItems]
+    ? [...navItems, ...adminOnlyItems, ...monitorItems]
     : isMonitor
       ? [...navItems, ...monitorItems]
       : navItems;
