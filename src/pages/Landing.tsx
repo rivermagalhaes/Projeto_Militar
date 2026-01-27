@@ -47,9 +47,9 @@ export default function Landing() {
                 <img src={brasao} alt="Brasão CMTO" className="h-32 w-auto mx-auto mb-6 drop-shadow-2xl animate-float" />
                 <h1 className="text-4xl md:text-5xl font-serif font-bold text-gold mb-2 text-glow-gold">CMTO</h1>
                 <p className="text-secondary-foreground/80 text-lg max-w-2xl mx-auto">
-                    Colégio Militar do Tocantins - Diaconízio Bezerra da Silva
+                    Colégio Militar do Tocantins
                     <br />Sistema de Gestão Escolar Militar
-                    </p>
+                </p>
             </motion.div>
 
             <div className="grid md:grid-cols-3 gap-6 w-full max-max-6xl">
