@@ -286,11 +286,11 @@ export default function Dashboard() {
       <div className="space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between gap-6">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 md:gap-6">
             <motion.img
               src={brasao}
               alt="Brasão CMTO"
-              className="h-20 w-auto hidden md:block"
+              className="h-16 w-auto hidden md:block"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
@@ -299,11 +299,11 @@ export default function Dashboard() {
               <motion.h1
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-3xl font-serif font-bold text-foreground"
+                className="text-2xl md:text-3xl font-serif font-bold text-foreground"
               >
                 Início
               </motion.h1>
-              <p className="text-muted-foreground mt-1">Sistema de Monitores - CMTO Diaconízio Bezerra da Silva</p>
+              <p className="text-muted-foreground mt-1 text-sm md:text-base">Sistema de Monitores - CMTO</p>
             </div>
           </div>
           <BackupExport isAdmin={isAdmin} />

@@ -1,4 +1,4 @@
-// Lovable Cloud backend function: create-monitor
+// Backend function: create-monitor
 // Creates an auth user + profile + assigns 'monitor' role without switching the current session.
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";

@@ -131,39 +131,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Tentar login real no Supabase
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-      // Se falhar e a senha for a 'mágica', permitir acesso master (Admin/Monitor)
-      if (error && password === '123456') {
-        console.warn('Login real falhou. Ativando Modo de Acesso de Emergência (Senha Mestra).');
-
-        // Criar um usuário mockado para a aplicação
-        const mockUser: User = {
-          id: '00000000-0000-0000-0000-000000000000',
-          email: email.toLowerCase(),
-          app_metadata: {},
-          user_metadata: { nome: 'Acesso Administrativo' },
-          aud: 'authenticated',
-          created_at: new Date().toISOString(),
-        } as User;
-
-        const mockSession: Session = {
-          access_token: 'bypass-token',
-          refresh_token: 'bypass-refresh-token',
-          expires_in: 3600,
-          expires_at: Math.floor(Date.now() / 1000) + 3600,
-          user: mockUser,
-          token_type: 'bearer',
-        };
-
-        // Atualizar estado global
-        setSession(mockSession);
-        setUser(mockUser);
-        setIsAdmin(true);  // Garantir acesso total no bypass
-        setIsMonitor(true);
-        setLoading(false);
-
-        return { error: null };
-      }
-
       if (error) {
         setLoading(false);
         return { error };

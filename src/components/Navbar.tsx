@@ -96,8 +96,8 @@ export function Navbar() {
                 <Link key={item.path} to={item.path}>
                   <motion.div
                     className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${isActive
-                        ? 'bg-[#D4AF37]/20 text-[#D4AF37]'
-                        : 'text-gray-200 hover:bg-white/10 hover:text-[#D4AF37]'
+                      ? 'bg-[#D4AF37]/20 text-[#D4AF37]'
+                      : 'text-gray-200 hover:bg-white/10 hover:text-[#D4AF37]'
                       }`}
                     whileHover={{ scale: 1.02, boxShadow: '0 0 10px rgba(212, 175, 55, 0.3)' }}
                     whileTap={{ scale: 0.98 }}
@@ -130,8 +130,8 @@ export function Navbar() {
                 <Link key={item.path} to={item.path} title={item.label}>
                   <motion.div
                     className={`flex items-center justify-center p-2 rounded-md transition-all duration-200 ${isActive
-                        ? 'bg-[#D4AF37]/20 text-[#D4AF37]'
-                        : 'text-gray-200 hover:bg-white/10 hover:text-[#D4AF37]'
+                      ? 'bg-[#D4AF37]/20 text-[#D4AF37]'
+                      : 'text-gray-200 hover:bg-white/10 hover:text-[#D4AF37]'
                       }`}
                     whileHover={{ scale: 1.1, boxShadow: '0 0 10px rgba(212, 175, 55, 0.3)' }}
                     whileTap={{ scale: 0.95 }}
@@ -171,9 +171,9 @@ export function Navbar() {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
-              className="lg:hidden py-3 border-t border-white/10 overflow-hidden"
+              className="lg:hidden py-2 border-t border-white/10 overflow-hidden"
             >
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto px-1">
                 {allItems.map((item, index) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
@@ -190,13 +190,13 @@ export function Navbar() {
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <div
-                          className={`flex items-center gap-2 px-3 py-2.5 rounded-md text-sm font-medium transition-all ${isActive
-                              ? 'bg-[#D4AF37]/20 text-[#D4AF37]'
-                              : 'text-gray-200 hover:bg-white/10 hover:text-[#D4AF37]'
+                          className={`flex items-center gap-2 px-3 py-3 rounded-md text-sm font-medium transition-all ${isActive
+                            ? 'bg-[#D4AF37]/20 text-[#D4AF37]'
+                            : 'text-gray-200 hover:bg-white/10 hover:text-[#D4AF37]'
                             }`}
                         >
-                          <Icon className="h-4 w-4" />
-                          <span>{item.label}</span>
+                          <Icon className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{item.label}</span>
                         </div>
                       </Link>
                     </motion.div>
@@ -209,7 +209,7 @@ export function Navbar() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
                 onClick={handleSignOut}
-                className="flex items-center gap-2 w-full px-3 py-2.5 mt-2 rounded-md text-sm font-medium text-red-400 hover:bg-red-500/10"
+                className="flex items-center gap-2 w-full px-4 py-3 mt-2 rounded-md text-sm font-medium text-red-400 hover:bg-red-500/10 border-t border-white/5"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Sair</span>

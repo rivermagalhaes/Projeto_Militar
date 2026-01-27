@@ -531,13 +531,13 @@ export default function Alunos() {
         </Dialog>
       </div>
 
-      <Tabs defaultValue="ativos">
-        <TabsList>
-          <TabsTrigger value="ativos">
+      <Tabs defaultValue="ativos" className="w-full">
+        <TabsList className="w-full justify-start overflow-x-auto">
+          <TabsTrigger value="ativos" className="min-w-fit">
             <Users className="h-4 w-4 mr-2" />
             Ativos ({alunos.length})
           </TabsTrigger>
-          <TabsTrigger value="arquivados">
+          <TabsTrigger value="arquivados" className="min-w-fit">
             <Archive className="h-4 w-4 mr-2" />
             Arquivados ({alunosArquivados.length})
           </TabsTrigger>

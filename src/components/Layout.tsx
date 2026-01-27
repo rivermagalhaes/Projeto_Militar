@@ -14,7 +14,7 @@ export function Layout({ children }: LayoutProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="pt-20 pb-8 px-4"
+        className="pt-16 md:pt-20 pb-8 px-3 md:px-4"
       >
         <div className="container mx-auto">
           {children}
