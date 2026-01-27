@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Users, UserRound, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import brasao from '@/assets/brasao-cmto.png';
+import { SupabaseTest } from '@/components/SupabaseTest';
 
 export default function Landing() {
     const navigate = useNavigate();
@@ -96,6 +97,15 @@ export default function Landing() {
             >
                 © 2026 CMTO | by Cândigo, Magalhães & Araújo-Todos os direitos reservados
             </motion.p>
+
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.5 }}
+                className="mt-8"
+            >
+                <SupabaseTest />
+            </motion.div>
         </div>
     );
 }
