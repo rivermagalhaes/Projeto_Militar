@@ -18,12 +18,12 @@ export default function Aniversariantes() {
       const { data } = await supabase.from('alunos').select('*').eq('arquivado', false);
 
       const lista = data?.filter(a => {
-        const nasc = new Date(a.data_nascimento);
+        const nasc = new Date(a.data_nascimento + 'T12:00:00');
         const aniv = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
         return aniv >= inicio && aniv <= fim;
       }).sort((a, b) => {
-        const dA = new Date(a.data_nascimento).getDate();
-        const dB = new Date(b.data_nascimento).getDate();
+        const dA = new Date(a.data_nascimento + 'T12:00:00').getDate();
+        const dB = new Date(b.data_nascimento + 'T12:00:00').getDate();
         return dA - dB;
       }) || [];
 

@@ -112,7 +112,7 @@ export default function Dashboard() {
       fimSemana.setDate(inicioSemana.getDate() + 6);
 
       const aniversariantes = (alunosData || []).filter((aluno) => {
-        const nascimento = new Date(aluno.data_nascimento);
+        const nascimento = new Date(aluno.data_nascimento + 'T12:00:00');
         const aniversarioEsteAno = new Date(
           hoje.getFullYear(),
           nascimento.getMonth(),
@@ -139,7 +139,8 @@ export default function Dashboard() {
       const { data, error } = await supabase
         .from('agenda')
         .select('*')
-        .order('data_evento', { ascending: false });
+        .filter('data_evento', 'gte', new Date().toISOString().split('T')[0])
+        .order('data_evento', { ascending: true });
 
       if (error) throw error;
 
@@ -208,8 +209,8 @@ export default function Dashboard() {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-lg text-navy truncate">{e.titulo}</h3>
-                  {e.descricao && <p className="text-muted-foreground text-sm mt-1 line-clamp-2">{e.descricao}</p>}
+                  <h3 className="font-bold text-lg text-navy break-words line-clamp-1">{e.titulo}</h3>
+                  {e.descricao && <p className="text-muted-foreground text-sm mt-1 break-words line-clamp-2">{e.descricao}</p>}
                 </div>
 
                 {e.imagem_url && (

@@ -102,12 +102,12 @@ export default function PortalPais() {
                             <div className="space-y-4">
                                 {dashboardData.anotacoes?.length > 0 ? (
                                     dashboardData.anotacoes.map((anot: any, i: number) => (
-                                        <div key={i} className="p-3 bg-muted/50 rounded-md border-l-2 border-olive">
-                                            <div className="flex justify-between text-sm mb-1">
-                                                <span className="font-bold uppercase text-xs">{anot.tipo}</span>
-                                                <span className="text-muted-foreground">{new Date(anot.created_at).toLocaleDateString()}</span>
+                                        <div key={i} className="p-3 bg-muted/50 rounded-md border-l-2 border-olive min-w-0">
+                                            <div className="flex justify-between text-sm mb-1 gap-2">
+                                                <span className="font-bold uppercase text-[10px] shrink-0">{anot.tipo}</span>
+                                                <span className="text-muted-foreground text-[10px] whitespace-nowrap">{new Date(anot.created_at).toLocaleDateString()}</span>
                                             </div>
-                                            <p className="text-sm">{anot.descricao}</p>
+                                            <p className="text-sm break-words">{anot.descricao}</p>
                                         </div>
                                     ))
                                 ) : (
@@ -128,9 +128,9 @@ export default function PortalPais() {
                                                 <p className="text-2xl font-bold">{format(new Date(item.data_evento + 'T12:00:00'), 'dd')}</p>
                                                 <p className="text-xs uppercase">{format(new Date(item.data_evento + 'T12:00:00'), 'MMM', { locale: ptBR })}</p>
                                             </div>
-                                            <div className="flex-1">
-                                                <div className="font-bold text-sm text-navy">{item.titulo}</div>
-                                                {item.descricao && <p className="text-xs text-muted-foreground mt-1">{item.descricao}</p>}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-bold text-sm text-navy break-words">{item.titulo}</div>
+                                                {item.descricao && <p className="text-xs text-muted-foreground mt-1 break-words">{item.descricao}</p>}
                                             </div>
                                         </div>
                                     ))

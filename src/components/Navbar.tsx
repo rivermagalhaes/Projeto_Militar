@@ -15,6 +15,7 @@ import {
   X,
   FileSearch,
   Settings,
+  ChevronRight,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -160,13 +161,13 @@ export function Navbar() {
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
-              className="lg:hidden py-2 border-t border-white/10 overflow-hidden"
+              className="lg:hidden fixed inset-x-0 top-[3.5rem] bg-navy-dark/95 backdrop-blur-lg border-t border-white/10 z-50 overflow-hidden flex flex-col max-h-[calc(100vh-3.5rem)] shadow-2xl"
             >
-              <div className="grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto px-1">
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
                 {allItems.map((item, index) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
@@ -176,38 +177,41 @@ export function Navbar() {
                       key={item.path}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
+                      transition={{ delay: index * 0.03 }}
                     >
                       <Link
                         to={item.path}
                         onClick={() => setMobileMenuOpen(false)}
+                        className={`flex items-center justify-between p-4 rounded-xl text-sm font-bold transition-all ${isActive
+                          ? 'bg-accent text-white shadow-lg'
+                          : 'text-gray-200 hover:bg-white/10'
+                          }`}
                       >
-                        <div
-                          className={`flex items-center gap-2 px-3 py-3 rounded-md text-sm font-medium transition-all ${isActive
-                            ? 'bg-[#D4AF37]/20 text-[#D4AF37]'
-                            : 'text-gray-200 hover:bg-white/10 hover:text-[#D4AF37]'
-                            }`}
-                        >
-                          <Icon className="h-4 w-4 shrink-0" />
-                          <span className="truncate">{item.label}</span>
+                        <div className="flex items-center gap-3">
+                          <Icon className="h-5 w-5 shrink-0" />
+                          <span>{item.label}</span>
                         </div>
+                        <ChevronRight className={`h-4 w-4 opacity-50 ${isActive ? 'text-white' : ''}`} />
                       </Link>
                     </motion.div>
                   );
                 })}
-              </div>
 
-              <div className="px-1 py-1">
+                {/* Sair button inside the scrollable area */}
                 <motion.button
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
+                  transition={{ delay: 0.2 }}
                   onClick={handleSignOut}
-                  className="flex items-center gap-2 w-full px-3 py-4 mt-2 rounded-md text-sm font-bold text-red-500 hover:bg-red-500/10 border-t border-white/5 bg-red-500/5 transition-colors"
+                  className="flex items-center justify-center gap-2 w-full p-4 mt-6 rounded-xl text-sm font-bold text-white bg-red-600/90 hover:bg-red-700 transition-colors shadow-lg"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-5 w-5" />
                   <span>Sair do Sistema</span>
                 </motion.button>
+              </div>
+
+              <div className="p-4 bg-navy/20 border-t border-white/5 text-[10px] text-center text-gray-500 uppercase tracking-widest font-bold">
+                CMTO - Gestão Escolar v2.0
               </div>
             </motion.div>
           )}
