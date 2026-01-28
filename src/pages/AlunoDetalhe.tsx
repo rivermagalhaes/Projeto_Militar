@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { calculateGrade, ELOGIO_VALORES } from '@/utils/gradeCalculation';
 import { Layout } from '@/components/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,11 +19,7 @@ import { cn } from '@/lib/utils';
 import { DateInput } from '@/components/DateInput';
 import { GradeDisplay } from '@/components/GradeDisplay';
 
-const ELOGIO_VALORES: Record<string, number> = {
-  coletivo: 0.20,
-  individual: 0.40,
-  mencao_honrosa: 0.60
-};
+
 
 const ANOTACAO_LABELS: Record<string, string> = {
   leve: 'Leve',
@@ -196,21 +193,51 @@ export default function AlunoDetalhe() {
     setAnosDisponiveis([...anos].sort((a, b) => b - a));
   };
 
+
+
   const calcularNota = async () => {
-    const { data: elogios } = await supabase.from('elogios').select('tipo').eq('aluno_id', id);
-    const { data: termos } = await supabase.from('termos').select('valor_desconto').eq('aluno_id', id);
+    try {
+      // Busca histórico completo para recálculo preciso
+      const { data: elogios, error: errElogios } = await supabase
+        .from('elogios')
+        .select('tipo')
+        .eq('aluno_id', id);
 
-    let nota = 8.0;
+      const { data: termos, error: errTermos } = await supabase
+        .from('termos')
+        .select('valor_desconto')
+        .eq('aluno_id', id);
 
-    elogios?.forEach(e => {
-      nota += ELOGIO_VALORES[e.tipo] || 0;
-    });
+      if (errElogios) throw errElogios;
+      if (errTermos) throw errTermos;
 
-    termos?.forEach(t => { nota -= Number(t.valor_desconto); });
+      // Chama a função PURA de cálculo
+      const novaNota = calculateGrade(elogios, termos);
 
-    // Allow nota > 10 and < 0
-    await supabase.from('alunos').update({ nota_disciplinar: nota }).eq('id', id);
-    fetchAluno();
+      // Atualiza no banco
+      const { error: updateError } = await supabase
+        .from('alunos')
+        .update({ nota_disciplinar: novaNota })
+        .eq('id', id);
+
+      if (updateError) {
+        console.error('Erro ao salvar nota:', updateError);
+        toast({
+          title: 'Erro ao salvar nota',
+          description: 'O cálculo foi feito mas não pôde ser salvo. Verifique suas permissões.',
+          variant: 'destructive'
+        });
+      } else {
+        // Atualiza estado local imediatamente para refletir na UI
+        setAluno((prev: any) => prev ? { ...prev, nota_disciplinar: novaNota } : null);
+      }
+
+      // Busca dados atualizados para garantir sincronia
+      fetchAluno();
+
+    } catch (error) {
+      console.error('Erro no fluxo de cálculo:', error);
+    }
   };
 
   const getCurrentAnoLetivo = (): number => {
