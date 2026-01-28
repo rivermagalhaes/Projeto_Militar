@@ -571,269 +571,270 @@ export default function AlunoDetalhe() {
             ))}
           </AnimatePresence>
         </div>
-        );
+      </div>
+    );
   };
 
-        if (loading) return <Layout><div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin" /></div></Layout>;
-        if (!aluno) return <Layout><p>Aluno não encontrado</p></Layout>;
+  if (loading) return <Layout><div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin" /></div></Layout>;
+  if (!aluno) return <Layout><p>Aluno não encontrado</p></Layout>;
 
   // Combine anotações e termos for the first tab
   const anotacoesETermos = [...anotacoesHist, ...termosHist].sort((a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 
-        return (
-        <Layout>
-          <div className="space-y-6">
-            <Button variant="ghost" onClick={() => navigate('/alunos')}><ArrowLeft className="mr-2 h-4 w-4" />Voltar</Button>
+  return (
+    <Layout>
+      <div className="space-y-6">
+        <Button variant="ghost" onClick={() => navigate('/alunos')}><ArrowLeft className="mr-2 h-4 w-4" />Voltar</Button>
 
-            <div className="card-military p-6">
-              {/* Badge Matrícula no topo */}
-              <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6">
-                {/* Avatar Foto */}
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  className="relative mx-auto md:mx-0 w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-accent bg-muted shrink-0 cursor-pointer group shadow-xl order-1 md:order-none"
-                >
-                  {aluno.foto_url ? (
-                    <img
-                      src={aluno.foto_url}
-                      alt={aluno.nome}
-                      className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
-                      <span className="text-2xl md:text-4xl font-serif font-bold text-primary">
-                        {aluno.nome.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
-                      </span>
-                    </div>
-                  )}
-                  {/* Glow overlay on hover */}
-                  <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-[#D4AF37]/30 to-transparent" />
-                </motion.div>
-
-                <div className="flex-1 text-center md:text-left order-2 md:order-none space-y-2 md:space-y-3">
-                  <div>
-                    <h1 className="text-2xl md:text-3xl font-serif font-bold leading-tight">{aluno.nome}</h1>
-                    <p className="text-muted-foreground text-sm md:text-base mt-1">
-                      {aluno.turma?.nome ? `${aluno.turma.nome} - ${aluno.turma.ano_letivo}` : 'Sem turma'} • {aluno.turno} • Entrada: {aluno.ano_entrada}
-                    </p>
-                  </div>
-
-                  {/* Matrícula no mobile fica aqui, no desktop fica no topo direito */}
-                  {aluno.matricula && (
-                    <div className="flex justify-center md:justify-end md:absolute md:top-6 md:right-6">
-                      <span className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1.5 md:px-4 md:py-2 rounded-lg font-mono font-bold shadow-lg text-sm md:text-base">
-                        <span className="text-sm md:text-lg">#</span>
-                        Matrícula: {aluno.matricula}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="pt-1">
-                    <p className="text-sm text-muted-foreground">Nascimento: {aluno.data_nascimento.split('-').reverse().join('/')}</p>
-                    {aluno.cpf && <p className="text-sm text-muted-foreground">CPF: {aluno.cpf}</p>}
-                  </div>
+        <div className="card-military p-6">
+          {/* Badge Matrícula no topo */}
+          <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6">
+            {/* Avatar Foto */}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="relative mx-auto md:mx-0 w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-accent bg-muted shrink-0 cursor-pointer group shadow-xl order-1 md:order-none"
+            >
+              {aluno.foto_url ? (
+                <img
+                  src={aluno.foto_url}
+                  alt={aluno.nome}
+                  className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
+                  <span className="text-2xl md:text-4xl font-serif font-bold text-primary">
+                    {aluno.nome.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
+                  </span>
                 </div>
+              )}
+              {/* Glow overlay on hover */}
+              <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-[#D4AF37]/30 to-transparent" />
+            </motion.div>
 
-                {/* Grade Display - Large centered card com animações e mensagem */}
-                <div className="bg-muted/50 rounded-xl p-4 md:p-6 border border-border w-full md:min-w-[280px] order-3 md:order-none">
-                  <p className="text-sm md:text-sm text-muted-foreground mb-3 text-center font-medium">Nota Disciplinar</p>
-                  <GradeDisplay
-                    nota={Number(aluno.nota_disciplinar)}
-                    size="lg"
-                    showProgress
-                    showBadge
-                    showMessage
-                  />
-                </div>
+            <div className="flex-1 text-center md:text-left order-2 md:order-none space-y-2 md:space-y-3">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-serif font-bold leading-tight">{aluno.nome}</h1>
+                <p className="text-muted-foreground text-sm md:text-base mt-1">
+                  {aluno.turma?.nome ? `${aluno.turma.nome} - ${aluno.turma.ano_letivo}` : 'Sem turma'} • {aluno.turno} • Entrada: {aluno.ano_entrada}
+                </p>
               </div>
 
-              <div className="flex gap-3 mt-6">
-                <Dialog>
-                  <DialogTrigger asChild><Button variant="outline">Mudar Turma</Button></DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader><DialogTitle>Mudar Turma</DialogTitle></DialogHeader>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Turma atual: {aluno.turma ? `${aluno.turma.ano_letivo} - ${aluno.turma.nome}` : 'Sem turma'}
-                    </p>
-                    <Select value={novaTurma} onValueChange={setNovaTurma}>
-                      <SelectTrigger><SelectValue placeholder="Selecione a nova turma" /></SelectTrigger>
-                      <SelectContent>
-                        {turmas
-                          .filter(t => t.id !== aluno.turma_id)
-                          .map(t => (
-                            <SelectItem key={t.id} value={t.id}>
-                              {t.nome} - {t.ano_letivo}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                    <Button onClick={handleMudarTurma} className="btn-military">Salvar</Button>
-                  </DialogContent>
-                </Dialog>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild><Button variant="destructive">Arquivar</Button></AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Arquivar aluno?</AlertDialogTitle>
-                      <AlertDialogDescription>O aluno será removido da lista ativa.</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleArquivar}>Confirmar</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+              {/* Matrícula no mobile fica aqui, no desktop fica no topo direito */}
+              {aluno.matricula && (
+                <div className="flex justify-center md:justify-end md:absolute md:top-6 md:right-6">
+                  <span className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1.5 md:px-4 md:py-2 rounded-lg font-mono font-bold shadow-lg text-sm md:text-base">
+                    <span className="text-sm md:text-lg">#</span>
+                    Matrícula: {aluno.matricula}
+                  </span>
+                </div>
+              )}
+
+              <div className="pt-1">
+                <p className="text-sm text-muted-foreground">Nascimento: {aluno.data_nascimento.split('-').reverse().join('/')}</p>
+                {aluno.cpf && <p className="text-sm text-muted-foreground">CPF: {aluno.cpf}</p>}
               </div>
             </div>
 
-            {/* Lançar section */}
-            <Tabs defaultValue="anotacoes" className="w-full">
-              <TabsList className="flex flex-col h-auto md:grid md:grid-cols-3 md:h-10 bg-muted/30 p-1 md:bg-muted">
-                <TabsTrigger value="anotacoes" className="w-full py-2 md:py-1.5 focus:z-10">Lançar Anotações</TabsTrigger>
-                <TabsTrigger value="elogios" className="w-full py-2 md:py-1.5 focus:z-10">Lançar Elogios</TabsTrigger>
-                <TabsTrigger value="faltas" className="w-full py-2 md:py-1.5 focus:z-10">Lançar Faltas</TabsTrigger>
-              </TabsList>
-              <TabsContent value="anotacoes" className="card-military p-4 mt-6">
-                <div className="space-y-4">
-                  <Select value={anotacaoTipo} onValueChange={setAnotacaoTipo}>
-                    <SelectTrigger><SelectValue placeholder="Tipo da anotação" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="leve">Leve (acumula)</SelectItem>
-                      <SelectItem value="media">Média (acumula)</SelectItem>
-                      <SelectItem value="grave">Grave (-0.50)</SelectItem>
-                      <SelectItem value="gravissima">Gravíssima (-1.00)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Textarea placeholder="Descrição..." value={anotacaoDesc} onChange={e => setAnotacaoDesc(e.target.value)} />
-                  <Button onClick={handleAnotacao} disabled={saving} className="btn-military">
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar'}
-                  </Button>
-                </div>
-              </TabsContent>
-              <TabsContent value="elogios" className="card-military p-4 mt-6">
-                <div className="space-y-4">
-                  <Select value={elogioTipo} onValueChange={setElogioTipo}>
-                    <SelectTrigger><SelectValue placeholder="Tipo do elogio" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="coletivo">Coletivo (+0.20)</SelectItem>
-                      <SelectItem value="individual">Individual (+0.40)</SelectItem>
-                      <SelectItem value="mencao_honrosa">Menção Honrosa (+0.60)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Textarea placeholder="Descrição (opcional)" value={elogioDesc} onChange={e => setElogioDesc(e.target.value)} />
-                  <Button onClick={handleElogio} disabled={saving} className="btn-gold">
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar'}
-                  </Button>
-                </div>
-              </TabsContent>
-              <TabsContent value="faltas" className="card-military p-4 mt-6">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">Data Início</label>
-                      <DateInput value={faltaDataInicio} onChange={setFaltaDataInicio} placeholder="DD/MM/AAAA" />
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground mb-1 block">Data Fim</label>
-                      <DateInput value={faltaDataFim} onChange={setFaltaDataFim} placeholder="DD/MM/AAAA" />
-                    </div>
-                  </div>
-                  <Select value={faltaMotivo} onValueChange={setFaltaMotivo}>
-                    <SelectTrigger><SelectValue placeholder="Motivo da falta" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Justificada por documento interno">Justificada por documento interno</SelectItem>
-                      <SelectItem value="Atestado médico">Atestado médico</SelectItem>
-                      <SelectItem value="Outros">Outros</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Textarea
-                    placeholder="Detalhes adicionais (opcional)"
-                    value={faltaDetalhes}
-                    onChange={e => setFaltaDetalhes(e.target.value)}
-                  />
-                  <Button onClick={handleFalta} disabled={saving} className="btn-military">
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar Falta'}
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
+            {/* Grade Display - Large centered card com animações e mensagem */}
+            <div className="bg-muted/50 rounded-xl p-4 md:p-6 border border-border w-full md:min-w-[280px] order-3 md:order-none">
+              <p className="text-sm md:text-sm text-muted-foreground mb-3 text-center font-medium">Nota Disciplinar</p>
+              <GradeDisplay
+                nota={Number(aluno.nota_disciplinar)}
+                size="lg"
+                showProgress
+                showBadge
+                showMessage
+              />
+            </div>
+          </div>
 
-            {/* Histórico Separado em Abas */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="card-military p-4 mt-8"
-            >
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                <h3 className="font-serif font-bold text-lg">Histórico Completo</h3>
-
-                {/* Filtro por ano */}
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-muted-foreground" />
-                  <Select value={filterAno} onValueChange={setFilterAno}>
-                    <SelectTrigger className="w-[140px]">
-                      <SelectValue placeholder="Filtrar ano" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos os anos</SelectItem>
-                      {anosDisponiveis.map(ano => (
-                        <SelectItem key={ano} value={ano.toString()}>{ano}</SelectItem>
+          <div className="flex gap-3 mt-6">
+            <Dialog>
+              <DialogTrigger asChild><Button variant="outline">Mudar Turma</Button></DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>Mudar Turma</DialogTitle></DialogHeader>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Turma atual: {aluno.turma ? `${aluno.turma.ano_letivo} - ${aluno.turma.nome}` : 'Sem turma'}
+                </p>
+                <Select value={novaTurma} onValueChange={setNovaTurma}>
+                  <SelectTrigger><SelectValue placeholder="Selecione a nova turma" /></SelectTrigger>
+                  <SelectContent>
+                    {turmas
+                      .filter(t => t.id !== aluno.turma_id)
+                      .map(t => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.nome} - {t.ano_letivo}
+                        </SelectItem>
                       ))}
-                    </SelectContent>
-                  </Select>
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleMudarTurma} className="btn-military">Salvar</Button>
+              </DialogContent>
+            </Dialog>
+            <AlertDialog>
+              <AlertDialogTrigger asChild><Button variant="destructive">Arquivar</Button></AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Arquivar aluno?</AlertDialogTitle>
+                  <AlertDialogDescription>O aluno será removido da lista ativa.</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleArquivar}>Confirmar</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+
+        {/* Lançar section */}
+        <Tabs defaultValue="anotacoes" className="w-full">
+          <TabsList className="flex flex-col h-auto md:grid md:grid-cols-3 md:h-10 bg-muted/30 p-1 md:bg-muted">
+            <TabsTrigger value="anotacoes" className="w-full py-2 md:py-1.5 focus:z-10">Lançar Anotações</TabsTrigger>
+            <TabsTrigger value="elogios" className="w-full py-2 md:py-1.5 focus:z-10">Lançar Elogios</TabsTrigger>
+            <TabsTrigger value="faltas" className="w-full py-2 md:py-1.5 focus:z-10">Lançar Faltas</TabsTrigger>
+          </TabsList>
+          <TabsContent value="anotacoes" className="card-military p-4 mt-6">
+            <div className="space-y-4">
+              <Select value={anotacaoTipo} onValueChange={setAnotacaoTipo}>
+                <SelectTrigger><SelectValue placeholder="Tipo da anotação" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="leve">Leve (acumula)</SelectItem>
+                  <SelectItem value="media">Média (acumula)</SelectItem>
+                  <SelectItem value="grave">Grave (-0.50)</SelectItem>
+                  <SelectItem value="gravissima">Gravíssima (-1.00)</SelectItem>
+                </SelectContent>
+              </Select>
+              <Textarea placeholder="Descrição..." value={anotacaoDesc} onChange={e => setAnotacaoDesc(e.target.value)} />
+              <Button onClick={handleAnotacao} disabled={saving} className="btn-military">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar'}
+              </Button>
+            </div>
+          </TabsContent>
+          <TabsContent value="elogios" className="card-military p-4 mt-6">
+            <div className="space-y-4">
+              <Select value={elogioTipo} onValueChange={setElogioTipo}>
+                <SelectTrigger><SelectValue placeholder="Tipo do elogio" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="coletivo">Coletivo (+0.20)</SelectItem>
+                  <SelectItem value="individual">Individual (+0.40)</SelectItem>
+                  <SelectItem value="mencao_honrosa">Menção Honrosa (+0.60)</SelectItem>
+                </SelectContent>
+              </Select>
+              <Textarea placeholder="Descrição (opcional)" value={elogioDesc} onChange={e => setElogioDesc(e.target.value)} />
+              <Button onClick={handleElogio} disabled={saving} className="btn-gold">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar'}
+              </Button>
+            </div>
+          </TabsContent>
+          <TabsContent value="faltas" className="card-military p-4 mt-6">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1 block">Data Início</label>
+                  <DateInput value={faltaDataInicio} onChange={setFaltaDataInicio} placeholder="DD/MM/AAAA" />
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1 block">Data Fim</label>
+                  <DateInput value={faltaDataFim} onChange={setFaltaDataFim} placeholder="DD/MM/AAAA" />
                 </div>
               </div>
+              <Select value={faltaMotivo} onValueChange={setFaltaMotivo}>
+                <SelectTrigger><SelectValue placeholder="Motivo da falta" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Justificada por documento interno">Justificada por documento interno</SelectItem>
+                  <SelectItem value="Atestado médico">Atestado médico</SelectItem>
+                  <SelectItem value="Outros">Outros</SelectItem>
+                </SelectContent>
+              </Select>
+              <Textarea
+                placeholder="Detalhes adicionais (opcional)"
+                value={faltaDetalhes}
+                onChange={e => setFaltaDetalhes(e.target.value)}
+              />
+              <Button onClick={handleFalta} disabled={saving} className="btn-military">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar Falta'}
+              </Button>
+            </div>
+          </TabsContent>
+        </Tabs>
 
-              <Tabs defaultValue="anotacoes-termos" className="w-full">
-                <TabsList className="flex flex-col h-auto md:grid md:grid-cols-3 md:h-10 bg-muted/30 p-1 md:bg-muted">
-                  <TabsTrigger value="anotacoes-termos" className="flex items-center justify-center gap-2 py-2 md:py-1.5 focus:z-10">
-                    <AlertTriangle className="h-4 w-4 shrink-0" />
-                    <span>Anotações e Termos ({filterByYear(anotacoesETermos).length})</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="elogios" className="flex items-center justify-center gap-2 py-2 md:py-1.5 focus:z-10">
-                    <Award className="h-4 w-4 shrink-0" />
-                    <span>Elogios ({filterByYear(elogiosHist).length})</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="faltas" className="flex items-center justify-center gap-2 py-2 md:py-1.5 focus:z-10">
-                    <Calendar className="h-4 w-4 shrink-0" />
-                    <span>Faltas ({filterByYear(faltasHist).length})</span>
-                  </TabsTrigger>
-                </TabsList>
+        {/* Histórico Separado em Abas */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="card-military p-4 mt-8"
+        >
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+            <h3 className="font-serif font-bold text-lg">Histórico Completo</h3>
 
-                <TabsContent value="anotacoes-termos" className="mt-4">
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {renderHistoryTable(anotacoesETermos, 'anotacoes-termos')}
-                  </motion.div>
-                </TabsContent>
-
-                <TabsContent value="elogios" className="mt-4">
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {renderHistoryTable(elogiosHist, 'elogios')}
-                  </motion.div>
-                </TabsContent>
-
-                <TabsContent value="faltas" className="mt-4">
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {renderHistoryTable(faltasHist, 'faltas')}
-                  </motion.div>
-                </TabsContent>
-              </Tabs>
-            </motion.div>
+            {/* Filtro por ano */}
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select value={filterAno} onValueChange={setFilterAno}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Filtrar ano" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os anos</SelectItem>
+                  {anosDisponiveis.map(ano => (
+                    <SelectItem key={ano} value={ano.toString()}>{ano}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </Layout>
-        );
+
+          <Tabs defaultValue="anotacoes-termos" className="w-full">
+            <TabsList className="flex flex-col h-auto md:grid md:grid-cols-3 md:h-10 bg-muted/30 p-1 md:bg-muted">
+              <TabsTrigger value="anotacoes-termos" className="flex items-center justify-center gap-2 py-2 md:py-1.5 focus:z-10">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <span>Anotações e Termos ({filterByYear(anotacoesETermos).length})</span>
+              </TabsTrigger>
+              <TabsTrigger value="elogios" className="flex items-center justify-center gap-2 py-2 md:py-1.5 focus:z-10">
+                <Award className="h-4 w-4 shrink-0" />
+                <span>Elogios ({filterByYear(elogiosHist).length})</span>
+              </TabsTrigger>
+              <TabsTrigger value="faltas" className="flex items-center justify-center gap-2 py-2 md:py-1.5 focus:z-10">
+                <Calendar className="h-4 w-4 shrink-0" />
+                <span>Faltas ({filterByYear(faltasHist).length})</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="anotacoes-termos" className="mt-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                {renderHistoryTable(anotacoesETermos, 'anotacoes-termos')}
+              </motion.div>
+            </TabsContent>
+
+            <TabsContent value="elogios" className="mt-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                {renderHistoryTable(elogiosHist, 'elogios')}
+              </motion.div>
+            </TabsContent>
+
+            <TabsContent value="faltas" className="mt-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                {renderHistoryTable(faltasHist, 'faltas')}
+              </motion.div>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
+      </div>
+    </Layout>
+  );
 }
