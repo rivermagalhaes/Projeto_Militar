@@ -33,13 +33,8 @@ const navItems = [
 
 // Items only visible to admins
 const adminOnlyItems = [
-  { path: '/monitores', label: 'Monitores', icon: Shield },
+  { path: '/monitores?tab=monitores', label: 'Administração', icon: Shield },
   { path: '/security-audit', label: 'Segurança', icon: ShieldCheck },
-];
-
-// Items visible to monitors (management of parent access)
-const monitorItems = [
-  { path: '/pais-alunos', label: 'Gestão Pais', icon: Users },
 ];
 
 export function Navbar() {
@@ -54,12 +49,10 @@ export function Navbar() {
   };
 
   // Admins see all items including "Monitores"
-  // Monitors see nav items plus "Acesso Pais" link
+  // Monitors just see nav items
   const allItems = isAdmin
-    ? [...navItems, ...adminOnlyItems, ...monitorItems]
-    : isMonitor
-      ? [...navItems, ...monitorItems]
-      : navItems;
+    ? [...navItems, ...adminOnlyItems]
+    : navItems;
 
   return (
     <nav className="navbar-military">
@@ -204,20 +197,22 @@ export function Navbar() {
                 })}
               </div>
 
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                onClick={handleSignOut}
-                className="flex items-center gap-2 w-full px-4 py-3 mt-2 rounded-md text-sm font-medium text-red-400 hover:bg-red-500/10 border-t border-white/5"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Sair</span>
-              </motion.button>
+              <div className="px-1 py-1">
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2 w-full px-3 py-4 mt-2 rounded-md text-sm font-bold text-red-500 hover:bg-red-500/10 border-t border-white/5 bg-red-500/5 transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Sair do Sistema</span>
+                </motion.button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-    </nav>
+    </nav >
   );
 }

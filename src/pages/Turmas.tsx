@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Layout } from '@/components/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, Plus, Search, Loader2, MoreVertical, Users, Calendar, GraduationCap } from 'lucide-react';
+import { BookOpen, Plus, Search, Loader2, Users, GraduationCap, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -44,36 +44,70 @@ export default function Turmas() {
     const fetchTurmas = async () => {
         setLoading(true);
         try {
-            // Get turmas and counts of alunos manually since Supabase client might not support easy counts in one go without RPC or complicated joins
+            console.log('Fetching turmas...');
             const { data: turmasData, error: turmasError } = await supabase
                 .from('turmas')
                 .select('*')
+                .order('ano_letivo', { ascending: false })
                 .order('nome');
 
-            if (turmasError) throw turmasError;
+            if (turmasError) {
+                console.error('Error fetching turmas:', turmasError);
+                throw turmasError;
+            }
 
-            const { data: countsData, error: countsError } = await supabase
-                .rpc('get_turma_student_counts'); // I might need to create this or query manually
+            console.log(`Fetched ${turmasData?.length || 0} turmas`);
 
-            // If RPC fails, just fall back to manual counts or no counts
-            let finalTurmas = turmasData as Turma[];
+            // Manual counts of alunos
+            const { data: alunosData, error: alunosError } = await (supabase
+                .from('alunos') as any)
+                .select('turma_id')
+                .eq('arquivado', false);
 
-            const { data: alunosData } = await supabase.from('alunos').select('turma_id');
+            if (alunosError) {
+                console.warn('Error fetching alumno counts:', alunosError);
+            }
+
             const counts: Record<string, number> = {};
-            alunosData?.forEach(a => {
+            (alunosData || []).forEach((a: any) => {
                 if (a.turma_id) counts[a.turma_id] = (counts[a.turma_id] || 0) + 1;
             });
 
-            finalTurmas = finalTurmas.map(t => ({
-                ...t,
+            const finalTurmas = ((turmasData as any[]) || []).map(t => ({
+                id: t.id,
+                nome: t.nome || 'Sem Nome',
+                ano_letivo: t.ano_letivo || new Date().getFullYear(),
+                created_at: t.created_at,
                 _count: { alunos: counts[t.id] || 0 }
             }));
 
             setTurmas(finalTurmas);
         } catch (error: any) {
-            toast({ title: 'Erro ao carregar turmas', description: error.message, variant: 'destructive' });
+            console.error('FetchTurmas caught error:', error);
+            toast({ title: 'Erro ao carregar turmas', description: error.message || 'Erro desconhecido', variant: 'destructive' });
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDeleteTurma = async (id: string, nomeTurma: string) => {
+        if (!confirm(`ATENÇÃO: Deseja excluir permanentemente a turma "${nomeTurma}"? Esta ação não pode ser desfeita e pode afetar alunos vinculados.`)) return;
+
+        try {
+            const { error } = await supabase
+                .from('turmas')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            toast({ title: 'Turma excluída com sucesso!' });
+            fetchTurmas();
+        } catch (error: any) {
+            toast({
+                title: 'Erro ao excluir',
+                description: error.message,
+                variant: 'destructive',
+            });
         }
     };
 
@@ -98,9 +132,9 @@ export default function Turmas() {
         }
     };
 
-    const filteredTurmas = turmas.filter(t =>
-        t.nome.toLowerCase().includes(search.toLowerCase()) ||
-        t.ano_letivo.toString().includes(search)
+    const filteredTurmas = (turmas || []).filter(t =>
+        (t.nome || '').toLowerCase().includes(search.toLowerCase()) ||
+        (t.ano_letivo || '').toString().includes(search)
     );
 
     return (
@@ -165,38 +199,50 @@ export default function Turmas() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <AnimatePresence>
+                    <AnimatePresence mode="popLayout">
                         {filteredTurmas.map((turma, index) => (
                             <motion.div
                                 key={turma.id}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
                                 transition={{ delay: index * 0.05 }}
-                                onClick={() => navigate(`/turmas/${turma.id}`)}
-                                className="group relative cursor-pointer"
+                                className="group relative"
                             >
                                 <div className="card-military p-6 bg-card hover:border-accent transition-all">
                                     <div className="flex justify-between items-start mb-4">
-                                        <div className="p-3 rounded-lg bg-navy/5 text-navy group-hover:bg-accent group-hover:text-white transition-colors">
+                                        <div
+                                            className="p-3 rounded-lg bg-navy/5 text-navy group-hover:bg-accent group-hover:text-white transition-colors cursor-pointer"
+                                            onClick={() => navigate(`/turmas/${turma.id}`)}
+                                        >
                                             <GraduationCap className="h-6 w-6" />
                                         </div>
-                                        <span className="text-xs font-bold px-2 py-1 bg-muted rounded text-muted-foreground">
-                                            {turma.ano_letivo}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-bold px-2 py-1 bg-muted rounded text-muted-foreground">
+                                                {turma.ano_letivo}
+                                            </span>
+                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                                                    onClick={(e) => { e.stopPropagation(); handleDeleteTurma(turma.id, turma.nome); }}
+                                                    title="Excluir"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <h3 className="text-xl font-bold text-navy mb-2 group-hover:text-accent transition-colors">
-                                        Turma {turma.nome}
-                                    </h3>
+                                    <div className="cursor-pointer" onClick={() => navigate(`/turmas/${turma.id}`)}>
+                                        <h3 className="text-xl font-bold text-navy mb-2 group-hover:text-accent transition-colors">
+                                            Turma {turma.nome}
+                                        </h3>
 
-                                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                         <div className="flex items-center gap-1">
                                             <Users className="h-4 w-4" />
                                             <span>{turma._count?.alunos || 0} Alunos</span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <Calendar className="h-4 w-4" />
-                                            <span>Ativa</span>
                                         </div>
                                     </div>
                                 </div>

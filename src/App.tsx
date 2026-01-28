@@ -11,7 +11,6 @@ import { Layout } from "@/components/Layout";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import PortalPais from "./pages/PortalPais";
-import PaisAlunos from "./pages/PaisAlunos";
 import Dashboard from "./pages/Dashboard";
 import Alunos from "./pages/Alunos";
 import AlunoDetalhe from "./pages/AlunoDetalhe";
@@ -60,7 +59,6 @@ function App() {
                 <Route path="/agenda" element={<Agenda />} />
                 <Route path="/turmas" element={<Turmas />} />
                 <Route path="/turmas/:id" element={<TurmaDetalhe />} />
-                <Route path="/pais-alunos" element={<PaisAlunos />} />
                 <Route path="/manual" element={<Manual />} />
                 <Route path="/relatorios" element={<Relatorios />} />
                 <Route path="/settings" element={<Settings />} />

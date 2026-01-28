@@ -265,8 +265,8 @@ export default function Agenda() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4 flex-1">
                     <div className="text-center bg-navy text-white px-3 py-2 rounded-lg min-w-[60px] shrink-0">
-                      <p className="text-2xl font-bold">{format(new Date(e.data_evento), 'dd')}</p>
-                      <p className="text-xs uppercase">{format(new Date(e.data_evento), 'MMM', { locale: ptBR })}</p>
+                      <p className="text-2xl font-bold">{format(new Date(e.data_evento + 'T12:00:00'), 'dd')}</p>
+                      <p className="text-xs uppercase">{format(new Date(e.data_evento + 'T12:00:00'), 'MMM', { locale: ptBR })}</p>
                     </div>
 
                     <div className="flex-1">

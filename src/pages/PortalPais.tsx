@@ -5,6 +5,8 @@ import { Users, Fingerprint, Calendar, Loader2, ArrowLeft, Info, LogOut } from '
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import brasao from '@/assets/brasao-cmto.png';
 
@@ -121,9 +123,15 @@ export default function PortalPais() {
                             <div className="space-y-4">
                                 {dashboardData.agenda?.length > 0 ? (
                                     dashboardData.agenda.map((item: any, i: number) => (
-                                        <div key={i} className="p-3 bg-muted/50 rounded-md">
-                                            <div className="font-bold text-sm">{item.titulo}</div>
-                                            <div className="text-xs text-muted-foreground">{new Date(item.data_evento).toLocaleDateString()}</div>
+                                        <div key={i} className="flex items-start gap-4 p-3 bg-muted/50 rounded-md">
+                                            <div className="text-center bg-navy text-white px-3 py-2 rounded-lg min-w-[60px] shrink-0">
+                                                <p className="text-2xl font-bold">{format(new Date(item.data_evento + 'T12:00:00'), 'dd')}</p>
+                                                <p className="text-xs uppercase">{format(new Date(item.data_evento + 'T12:00:00'), 'MMM', { locale: ptBR })}</p>
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="font-bold text-sm text-navy">{item.titulo}</div>
+                                                {item.descricao && <p className="text-xs text-muted-foreground mt-1">{item.descricao}</p>}
+                                            </div>
                                         </div>
                                     ))
                                 ) : (

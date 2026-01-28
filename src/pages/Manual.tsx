@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { FileSearch, Download, ExternalLink, Loader2, BookOpen, ShieldCheck } from 'lucide-react';
+import { FileSearch, Download, ExternalLink, Loader2, BookOpen, ShieldCheck, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Manual {
@@ -17,21 +18,37 @@ export default function Manual() {
     }, []);
 
     const fetchManual = async () => {
-        const { data } = await supabase
-            .from('manuais')
-            .order('uploaded_at', { ascending: false })
-            .limit(1)
-            .single();
+        try {
+            const { data } = await (supabase
+                .from('manuais') as any)
+                .select('*')
+                .order('uploaded_at', { ascending: false })
+                .limit(1)
+                .single();
 
-        if (data) setManual(data);
-        setLoading(false);
+            if (data) setManual(data);
+        } catch (error) {
+            console.error('Error fetching manual:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
-            <div className="flex items-center gap-2">
-                <FileSearch className="h-8 w-8 text-accent" />
-                <h1 className="text-3xl font-bold text-navy">Manual do Aluno</h1>
+            <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                    <FileSearch className="h-8 w-8 text-accent" />
+                    <h1 className="text-3xl font-bold text-navy">Manual do Aluno</h1>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <Button asChild variant="outline" className="border-navy/10 text-navy hover:bg-navy/5">
+                        <Link to="/monitores?tab=manual">
+                            <Settings className="mr-2 h-4 w-4" /> Gerenciar Manual
+                        </Link>
+                    </Button>
+                </div>
             </div>
 
             <div className="card-military overflow-hidden">

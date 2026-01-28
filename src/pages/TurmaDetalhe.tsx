@@ -40,21 +40,23 @@ export default function TurmaDetalhe() {
         try {
             const [{ data: turmaData }, { data: alunosData }] = await Promise.all([
                 supabase.from('turmas').select('*').eq('id', id).single(),
-                supabase.from('alunos').select('*').eq('turma_id', id).eq('arquivado', false).order('nome')
+                supabase.from('alunos').select('*').eq('turma_id', id).order('nome')
             ]);
 
             if (turmaData) setTurma(turmaData);
             if (alunosData) setAlunos(alunosData as Aluno[]);
+            else setAlunos([]); // Fallback to empty array
         } catch (error) {
             console.error('Erro ao carregar dados da turma:', error);
+            setAlunos([]); // Safety fallback
         } finally {
             setLoading(false);
         }
     };
 
-    const filteredAlunos = alunos.filter(a =>
-        a.nome.toLowerCase().includes(search.toLowerCase()) ||
-        a.matricula?.includes(search)
+    const filteredAlunos = (alunos || []).filter(a =>
+        (a.nome || '').toLowerCase().includes(search.toLowerCase()) ||
+        (a.matricula || '').includes(search)
     );
 
     if (loading) {
