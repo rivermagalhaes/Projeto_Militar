@@ -387,351 +387,453 @@ export default function AlunoDetalhe() {
     }
 
     return (
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="text-left p-2">Data</th>
-              <th className="text-left p-2">Ano</th>
-              <th className="text-left p-2">Tipo</th>
-              <th className="text-left p-2">Categoria</th>
-              <th className="text-left p-2">Descrição</th>
-              <th className="text-right p-2">Peso</th>
-              <th className="text-left p-2">Lançado por</th>
-              <th className="p-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <AnimatePresence mode="popLayout">
-              {filteredItems.map(item => (
-                <motion.tr
-                  key={`${item.category}-${item.id}`}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  className="border-b border-muted hover:bg-muted/50"
-                >
-                  <td className="p-2 whitespace-nowrap">
-                    {format(new Date(item.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                  </td>
-                  <td className="p-2 font-mono text-xs">
-                    {item.ano_letivo}
-                  </td>
-                  <td className="p-2">
-                    <span className={cn(
-                      'inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium',
-                      item.category === 'elogio' ? 'bg-primary/20 text-primary' :
-                        item.category === 'termo' ? 'bg-destructive/20 text-destructive' :
-                          item.category === 'falta' ? 'bg-blue-500/20 text-blue-600' :
-                            'bg-orange-500/20 text-orange-600'
+      <div className="space-y-4">
+        {/* Desktop View - Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left p-2">Data</th>
+                <th className="text-left p-2">Ano</th>
+                <th className="text-left p-2">Tipo</th>
+                <th className="text-left p-2">Categoria</th>
+                <th className="text-left p-2">Descrição</th>
+                <th className="text-right p-2">Peso</th>
+                <th className="text-left p-2">Lançado por</th>
+                <th className="p-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <AnimatePresence mode="popLayout">
+                {filteredItems.map(item => (
+                  <motion.tr
+                    key={`${item.category}-${item.id}`}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 10 }}
+                    className="border-b border-muted hover:bg-muted/50"
+                  >
+                    <td className="p-2 whitespace-nowrap">
+                      {format(new Date(item.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                    </td>
+                    <td className="p-2 font-mono text-xs">
+                      {item.ano_letivo}
+                    </td>
+                    <td className="p-2">
+                      <span className={cn(
+                        'inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium',
+                        item.category === 'elogio' ? 'bg-primary/20 text-primary' :
+                          item.category === 'termo' ? 'bg-destructive/20 text-destructive' :
+                            item.category === 'falta' ? 'bg-blue-500/20 text-blue-600' :
+                              'bg-orange-500/20 text-orange-600'
+                      )}>
+                        {item.category === 'elogio' ? <Award className="h-3 w-3" /> :
+                          item.category === 'termo' ? <FileText className="h-3 w-3" /> :
+                            item.category === 'falta' ? <Calendar className="h-3 w-3" /> :
+                              <AlertTriangle className="h-3 w-3" />}
+                        {item.category === 'elogio' ? 'Elogio' :
+                          item.category === 'termo' ? 'Termo' :
+                            item.category === 'falta' ? 'Falta' : 'Anotação'}
+                      </span>
+                    </td>
+                    <td className="p-2">{item.label}</td>
+                    <td className="p-2 max-w-xs truncate" title={item.descricao || '-'}>
+                      {item.descricao || '-'}
+                    </td>
+                    <td className={cn(
+                      'p-2 text-right font-mono',
+                      item.peso.startsWith('+') ? 'text-primary' :
+                        item.peso === '0.00' ? 'text-muted-foreground' : 'text-destructive'
                     )}>
-                      {item.category === 'elogio' ? <Award className="h-3 w-3" /> :
-                        item.category === 'termo' ? <FileText className="h-3 w-3" /> :
-                          item.category === 'falta' ? <Calendar className="h-3 w-3" /> :
-                            <AlertTriangle className="h-3 w-3" />}
-                      {item.category === 'elogio' ? 'Elogio' :
-                        item.category === 'termo' ? 'Termo' :
-                          item.category === 'falta' ? 'Falta' : 'Anotação'}
-                    </span>
-                  </td>
-                  <td className="p-2">{item.label}</td>
-                  <td className="p-2 max-w-xs truncate" title={item.descricao || '-'}>
-                    {item.descricao || '-'}
-                  </td>
-                  <td className={cn(
-                    'p-2 text-right font-mono',
+                      {item.peso}
+                    </td>
+                    <td className="p-2 text-muted-foreground">
+                      {item.profile?.nome || '-'}
+                    </td>
+                    <td className="p-2">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir registro?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              A nota será recalculada após a exclusão.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Não</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteHistorico(item)}>Sim</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </td>
+                  </motion.tr>
+                ))}
+              </AnimatePresence>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile View - Cards */}
+        <div className="md:hidden space-y-4">
+          <AnimatePresence mode="popLayout">
+            {filteredItems.map(item => (
+              <motion.div
+                key={`card-${item.category}-${item.id}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-card border border-border rounded-lg p-4 shadow-sm relative overflow-hidden"
+              >
+                {/* Top Row: Type and Weight */}
+                <div className="flex justify-between items-start mb-3">
+                  <span className={cn(
+                    'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider',
+                    item.category === 'elogio' ? 'bg-primary/20 text-primary' :
+                      item.category === 'termo' ? 'bg-destructive/10 text-destructive' :
+                        item.category === 'falta' ? 'bg-blue-500/10 text-blue-600' :
+                          'bg-orange-500/10 text-orange-600'
+                  )}>
+                    {item.category === 'elogio' ? <Award className="h-3.5 w-3.5" /> :
+                      item.category === 'termo' ? <FileText className="h-3.5 w-3.5" /> :
+                        item.category === 'falta' ? <Calendar className="h-3.5 w-3.5" /> :
+                          <AlertTriangle className="h-3.5 w-3.5" />}
+                    {item.category === 'elogio' ? 'Elogio' :
+                      item.category === 'termo' ? 'Termo' :
+                        item.category === 'falta' ? 'Falta' : 'Anotação'}
+                  </span>
+                  <span className={cn(
+                    'font-mono font-bold text-sm bg-muted/50 px-2 py-0.5 rounded',
                     item.peso.startsWith('+') ? 'text-primary' :
                       item.peso === '0.00' ? 'text-muted-foreground' : 'text-destructive'
                   )}>
                     {item.peso}
-                  </td>
-                  <td className="p-2 text-muted-foreground">
-                    {item.profile?.nome || '-'}
-                  </td>
-                  <td className="p-2">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Excluir registro?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            A nota será recalculada após a exclusão.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Não</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDeleteHistorico(item)}>Sim</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </td>
-                </motion.tr>
-              ))}
-            </AnimatePresence>
-          </tbody>
-        </table>
-      </div>
-    );
+                  </span>
+                </div>
+
+                {/* Data and Label */}
+                <div className="mb-3">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mb-1">
+                    {format(new Date(item.created_at), "EEEE, d 'de' MMMM 'às' HH:mm", { locale: ptBR })}
+                  </p>
+                  <h3 className="text-base font-bold text-foreground leading-tight">{item.label}</h3>
+                </div>
+
+                {/* Description */}
+                {item.descricao && (
+                  <div className="bg-muted/30 rounded p-3 mb-3 border-l-2 border-muted">
+                    <p className="text-sm text-foreground/90 whitespace-normal break-words leading-relaxed italic">
+                      "{item.descricao}"
+                    </p>
+                  </div>
+                )}
+
+                {/* Footer: Prof and Actions */}
+                <div className="flex justify-between items-center pt-2 border-t border-border/50 text-xs">
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    Por: <span className="font-medium text-foreground">{item.profile?.nome || '-'}</span>
+                  </span>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10">
+                        <Trash2 className="h-4 w-4 mr-1" /> Excluir
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir registro?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          A nota será recalculada após a exclusão.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Não</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDeleteHistorico(item)}>Sim</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+
+                {/* Decorative side accent */}
+                <div className={cn(
+                  "absolute top-0 left-0 w-1 h-full",
+                  item.category === 'elogio' ? 'bg-primary' :
+                    item.category === 'termo' ? 'bg-destructive' :
+                      item.category === 'falta' ? 'bg-blue-500' :
+                        'bg-orange-500'
+                )} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+        );
   };
 
-  if (loading) return <Layout><div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin" /></div></Layout>;
-  if (!aluno) return <Layout><p>Aluno não encontrado</p></Layout>;
+        if (loading) return <Layout><div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin" /></div></Layout>;
+        if (!aluno) return <Layout><p>Aluno não encontrado</p></Layout>;
 
   // Combine anotações e termos for the first tab
   const anotacoesETermos = [...anotacoesHist, ...termosHist].sort((a, b) =>
-    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  );
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
 
-  return (
-    <Layout>
-      <div className="space-y-6">
-        <Button variant="ghost" onClick={() => navigate('/alunos')}><ArrowLeft className="mr-2 h-4 w-4" />Voltar</Button>
+        return (
+        <Layout>
+          <div className="space-y-6">
+            <Button variant="ghost" onClick={() => navigate('/alunos')}><ArrowLeft className="mr-2 h-4 w-4" />Voltar</Button>
 
-        <div className="card-military p-6">
-          {/* Badge Matrícula no topo */}
-          {aluno.matricula && (
-            <div className="flex justify-start md:justify-end mb-4">
-              <span className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1.5 md:px-4 md:py-2 rounded-lg font-mono font-bold shadow-lg text-sm md:text-base">
-                <span className="text-base md:text-lg">#</span>
-                Matrícula: {aluno.matricula}
-              </span>
-            </div>
-          )}
+            <div className="card-military p-6">
+              {/* Badge Matrícula no topo */}
+              <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6">
+                {/* Avatar Foto */}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="relative mx-auto md:mx-0 w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-accent bg-muted shrink-0 cursor-pointer group shadow-xl order-1 md:order-none"
+                >
+                  {aluno.foto_url ? (
+                    <img
+                      src={aluno.foto_url}
+                      alt={aluno.nome}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
+                      <span className="text-2xl md:text-4xl font-serif font-bold text-primary">
+                        {aluno.nome.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
+                      </span>
+                    </div>
+                  )}
+                  {/* Glow overlay on hover */}
+                  <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-[#D4AF37]/30 to-transparent" />
+                </motion.div>
 
-          <div className="flex flex-col md:flex-row md:items-start gap-6">
-            {/* Avatar Foto */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="relative mx-auto md:mx-0 w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-accent bg-muted shrink-0 cursor-pointer group shadow-xl"
-            >
-              {aluno.foto_url ? (
-                <img
-                  src={aluno.foto_url}
-                  alt={aluno.nome}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
-                  <span className="text-2xl md:text-4xl font-serif font-bold text-primary">
-                    {aluno.nome.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
-                  </span>
+                <div className="flex-1 text-center md:text-left order-2 md:order-none space-y-2 md:space-y-3">
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-serif font-bold leading-tight">{aluno.nome}</h1>
+                    <p className="text-muted-foreground text-sm md:text-base mt-1">
+                      {aluno.turma?.nome ? `${aluno.turma.nome} - ${aluno.turma.ano_letivo}` : 'Sem turma'} • {aluno.turno} • Entrada: {aluno.ano_entrada}
+                    </p>
+                  </div>
+
+                  {/* Matrícula no mobile fica aqui, no desktop fica no topo direito */}
+                  {aluno.matricula && (
+                    <div className="flex justify-center md:justify-end md:absolute md:top-6 md:right-6">
+                      <span className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1.5 md:px-4 md:py-2 rounded-lg font-mono font-bold shadow-lg text-sm md:text-base">
+                        <span className="text-sm md:text-lg">#</span>
+                        Matrícula: {aluno.matricula}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="pt-1">
+                    <p className="text-sm text-muted-foreground">Nascimento: {aluno.data_nascimento.split('-').reverse().join('/')}</p>
+                    {aluno.cpf && <p className="text-sm text-muted-foreground">CPF: {aluno.cpf}</p>}
+                  </div>
                 </div>
-              )}
-              {/* Glow overlay on hover */}
-              <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-[#D4AF37]/30 to-transparent" />
-            </motion.div>
 
-            <div className="flex-1 text-center md:text-left">
-              <h1 className="text-2xl font-serif font-bold">{aluno.nome}</h1>
-              <p className="text-muted-foreground">
-                {aluno.turma?.nome ? `${aluno.turma.nome} - ${aluno.turma.ano_letivo}` : 'Sem turma'} • {aluno.turno} • Entrada: {aluno.ano_entrada}
-              </p>
-              <p className="text-sm text-muted-foreground">Nascimento: {aluno.data_nascimento.split('-').reverse().join('/')}</p>
-              {aluno.cpf && <p className="text-sm text-muted-foreground">CPF: {aluno.cpf}</p>}
-            </div>
-
-            {/* Grade Display - Large centered card com animações e mensagem */}
-            <div className="bg-muted/50 rounded-xl p-4 md:p-6 border border-border min-w-full md:min-w-[280px]">
-              <p className="text-xs md:text-sm text-muted-foreground mb-3 text-center font-medium">Nota Disciplinar</p>
-              <GradeDisplay
-                nota={Number(aluno.nota_disciplinar)}
-                size="lg"
-                showProgress
-                showBadge
-                showMessage
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-3 mt-6">
-            <Dialog>
-              <DialogTrigger asChild><Button variant="outline">Mudar Turma</Button></DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Mudar Turma</DialogTitle></DialogHeader>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Turma atual: {aluno.turma ? `${aluno.turma.ano_letivo} - ${aluno.turma.nome}` : 'Sem turma'}
-                </p>
-                <Select value={novaTurma} onValueChange={setNovaTurma}>
-                  <SelectTrigger><SelectValue placeholder="Selecione a nova turma" /></SelectTrigger>
-                  <SelectContent>
-                    {turmas
-                      .filter(t => t.id !== aluno.turma_id)
-                      .map(t => (
-                        <SelectItem key={t.id} value={t.id}>
-                          {t.nome} - {t.ano_letivo}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-                <Button onClick={handleMudarTurma} className="btn-military">Salvar</Button>
-              </DialogContent>
-            </Dialog>
-            <AlertDialog>
-              <AlertDialogTrigger asChild><Button variant="destructive">Arquivar</Button></AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Arquivar aluno?</AlertDialogTitle>
-                  <AlertDialogDescription>O aluno será removido da lista ativa.</AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleArquivar}>Confirmar</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </div>
-
-        {/* Lançar section */}
-        <Tabs defaultValue="anotacoes">
-          <TabsList>
-            <TabsTrigger value="anotacoes">Lançar Anotações</TabsTrigger>
-            <TabsTrigger value="elogios">Lançar Elogios</TabsTrigger>
-            <TabsTrigger value="faltas">Lançar Faltas</TabsTrigger>
-          </TabsList>
-          <TabsContent value="anotacoes" className="card-military p-4 mt-2">
-            <div className="space-y-4">
-              <Select value={anotacaoTipo} onValueChange={setAnotacaoTipo}>
-                <SelectTrigger><SelectValue placeholder="Tipo da anotação" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="leve">Leve (acumula)</SelectItem>
-                  <SelectItem value="media">Média (acumula)</SelectItem>
-                  <SelectItem value="grave">Grave (-0.50)</SelectItem>
-                  <SelectItem value="gravissima">Gravíssima (-1.00)</SelectItem>
-                </SelectContent>
-              </Select>
-              <Textarea placeholder="Descrição..." value={anotacaoDesc} onChange={e => setAnotacaoDesc(e.target.value)} />
-              <Button onClick={handleAnotacao} disabled={saving} className="btn-military">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar'}
-              </Button>
-            </div>
-          </TabsContent>
-          <TabsContent value="elogios" className="card-military p-4 mt-2">
-            <div className="space-y-4">
-              <Select value={elogioTipo} onValueChange={setElogioTipo}>
-                <SelectTrigger><SelectValue placeholder="Tipo do elogio" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="coletivo">Coletivo (+0.20)</SelectItem>
-                  <SelectItem value="individual">Individual (+0.40)</SelectItem>
-                  <SelectItem value="mencao_honrosa">Menção Honrosa (+0.60)</SelectItem>
-                </SelectContent>
-              </Select>
-              <Textarea placeholder="Descrição (opcional)" value={elogioDesc} onChange={e => setElogioDesc(e.target.value)} />
-              <Button onClick={handleElogio} disabled={saving} className="btn-gold">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar'}
-              </Button>
-            </div>
-          </TabsContent>
-          <TabsContent value="faltas" className="card-military p-4 mt-2">
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">Data Início</label>
-                  <DateInput value={faltaDataInicio} onChange={setFaltaDataInicio} placeholder="DD/MM/AAAA" />
-                </div>
-                <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">Data Fim</label>
-                  <DateInput value={faltaDataFim} onChange={setFaltaDataFim} placeholder="DD/MM/AAAA" />
+                {/* Grade Display - Large centered card com animações e mensagem */}
+                <div className="bg-muted/50 rounded-xl p-4 md:p-6 border border-border w-full md:min-w-[280px] order-3 md:order-none">
+                  <p className="text-sm md:text-sm text-muted-foreground mb-3 text-center font-medium">Nota Disciplinar</p>
+                  <GradeDisplay
+                    nota={Number(aluno.nota_disciplinar)}
+                    size="lg"
+                    showProgress
+                    showBadge
+                    showMessage
+                  />
                 </div>
               </div>
-              <Select value={faltaMotivo} onValueChange={setFaltaMotivo}>
-                <SelectTrigger><SelectValue placeholder="Motivo da falta" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Justificada por documento interno">Justificada por documento interno</SelectItem>
-                  <SelectItem value="Atestado médico">Atestado médico</SelectItem>
-                  <SelectItem value="Outros">Outros</SelectItem>
-                </SelectContent>
-              </Select>
-              <Textarea
-                placeholder="Detalhes adicionais (opcional)"
-                value={faltaDetalhes}
-                onChange={e => setFaltaDetalhes(e.target.value)}
-              />
-              <Button onClick={handleFalta} disabled={saving} className="btn-military">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar Falta'}
-              </Button>
-            </div>
-          </TabsContent>
-        </Tabs>
 
-        {/* Histórico Separado em Abas */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="card-military p-4"
-        >
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-            <h3 className="font-serif font-bold text-lg">Histórico Completo</h3>
-
-            {/* Filtro por ano */}
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={filterAno} onValueChange={setFilterAno}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Filtrar ano" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os anos</SelectItem>
-                  {anosDisponiveis.map(ano => (
-                    <SelectItem key={ano} value={ano.toString()}>{ano}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-3 mt-6">
+                <Dialog>
+                  <DialogTrigger asChild><Button variant="outline">Mudar Turma</Button></DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>Mudar Turma</DialogTitle></DialogHeader>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Turma atual: {aluno.turma ? `${aluno.turma.ano_letivo} - ${aluno.turma.nome}` : 'Sem turma'}
+                    </p>
+                    <Select value={novaTurma} onValueChange={setNovaTurma}>
+                      <SelectTrigger><SelectValue placeholder="Selecione a nova turma" /></SelectTrigger>
+                      <SelectContent>
+                        {turmas
+                          .filter(t => t.id !== aluno.turma_id)
+                          .map(t => (
+                            <SelectItem key={t.id} value={t.id}>
+                              {t.nome} - {t.ano_letivo}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={handleMudarTurma} className="btn-military">Salvar</Button>
+                  </DialogContent>
+                </Dialog>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild><Button variant="destructive">Arquivar</Button></AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Arquivar aluno?</AlertDialogTitle>
+                      <AlertDialogDescription>O aluno será removido da lista ativa.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleArquivar}>Confirmar</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
+
+            {/* Lançar section */}
+            <Tabs defaultValue="anotacoes" className="w-full">
+              <TabsList className="flex flex-col h-auto md:grid md:grid-cols-3 md:h-10 bg-muted/30 p-1 md:bg-muted">
+                <TabsTrigger value="anotacoes" className="w-full py-2 md:py-1.5 focus:z-10">Lançar Anotações</TabsTrigger>
+                <TabsTrigger value="elogios" className="w-full py-2 md:py-1.5 focus:z-10">Lançar Elogios</TabsTrigger>
+                <TabsTrigger value="faltas" className="w-full py-2 md:py-1.5 focus:z-10">Lançar Faltas</TabsTrigger>
+              </TabsList>
+              <TabsContent value="anotacoes" className="card-military p-4 mt-6">
+                <div className="space-y-4">
+                  <Select value={anotacaoTipo} onValueChange={setAnotacaoTipo}>
+                    <SelectTrigger><SelectValue placeholder="Tipo da anotação" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="leve">Leve (acumula)</SelectItem>
+                      <SelectItem value="media">Média (acumula)</SelectItem>
+                      <SelectItem value="grave">Grave (-0.50)</SelectItem>
+                      <SelectItem value="gravissima">Gravíssima (-1.00)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Textarea placeholder="Descrição..." value={anotacaoDesc} onChange={e => setAnotacaoDesc(e.target.value)} />
+                  <Button onClick={handleAnotacao} disabled={saving} className="btn-military">
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar'}
+                  </Button>
+                </div>
+              </TabsContent>
+              <TabsContent value="elogios" className="card-military p-4 mt-6">
+                <div className="space-y-4">
+                  <Select value={elogioTipo} onValueChange={setElogioTipo}>
+                    <SelectTrigger><SelectValue placeholder="Tipo do elogio" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="coletivo">Coletivo (+0.20)</SelectItem>
+                      <SelectItem value="individual">Individual (+0.40)</SelectItem>
+                      <SelectItem value="mencao_honrosa">Menção Honrosa (+0.60)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Textarea placeholder="Descrição (opcional)" value={elogioDesc} onChange={e => setElogioDesc(e.target.value)} />
+                  <Button onClick={handleElogio} disabled={saving} className="btn-gold">
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar'}
+                  </Button>
+                </div>
+              </TabsContent>
+              <TabsContent value="faltas" className="card-military p-4 mt-6">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">Data Início</label>
+                      <DateInput value={faltaDataInicio} onChange={setFaltaDataInicio} placeholder="DD/MM/AAAA" />
+                    </div>
+                    <div>
+                      <label className="text-sm text-muted-foreground mb-1 block">Data Fim</label>
+                      <DateInput value={faltaDataFim} onChange={setFaltaDataFim} placeholder="DD/MM/AAAA" />
+                    </div>
+                  </div>
+                  <Select value={faltaMotivo} onValueChange={setFaltaMotivo}>
+                    <SelectTrigger><SelectValue placeholder="Motivo da falta" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Justificada por documento interno">Justificada por documento interno</SelectItem>
+                      <SelectItem value="Atestado médico">Atestado médico</SelectItem>
+                      <SelectItem value="Outros">Outros</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Textarea
+                    placeholder="Detalhes adicionais (opcional)"
+                    value={faltaDetalhes}
+                    onChange={e => setFaltaDetalhes(e.target.value)}
+                  />
+                  <Button onClick={handleFalta} disabled={saving} className="btn-military">
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Registrar Falta'}
+                  </Button>
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            {/* Histórico Separado em Abas */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="card-military p-4 mt-8"
+            >
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                <h3 className="font-serif font-bold text-lg">Histórico Completo</h3>
+
+                {/* Filtro por ano */}
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Select value={filterAno} onValueChange={setFilterAno}>
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Filtrar ano" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os anos</SelectItem>
+                      {anosDisponiveis.map(ano => (
+                        <SelectItem key={ano} value={ano.toString()}>{ano}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <Tabs defaultValue="anotacoes-termos" className="w-full">
+                <TabsList className="flex flex-col h-auto md:grid md:grid-cols-3 md:h-10 bg-muted/30 p-1 md:bg-muted">
+                  <TabsTrigger value="anotacoes-termos" className="flex items-center justify-center gap-2 py-2 md:py-1.5 focus:z-10">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <span>Anotações e Termos ({filterByYear(anotacoesETermos).length})</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="elogios" className="flex items-center justify-center gap-2 py-2 md:py-1.5 focus:z-10">
+                    <Award className="h-4 w-4 shrink-0" />
+                    <span>Elogios ({filterByYear(elogiosHist).length})</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="faltas" className="flex items-center justify-center gap-2 py-2 md:py-1.5 focus:z-10">
+                    <Calendar className="h-4 w-4 shrink-0" />
+                    <span>Faltas ({filterByYear(faltasHist).length})</span>
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="anotacoes-termos" className="mt-4">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {renderHistoryTable(anotacoesETermos, 'anotacoes-termos')}
+                  </motion.div>
+                </TabsContent>
+
+                <TabsContent value="elogios" className="mt-4">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {renderHistoryTable(elogiosHist, 'elogios')}
+                  </motion.div>
+                </TabsContent>
+
+                <TabsContent value="faltas" className="mt-4">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {renderHistoryTable(faltasHist, 'faltas')}
+                  </motion.div>
+                </TabsContent>
+              </Tabs>
+            </motion.div>
           </div>
-
-          <Tabs defaultValue="anotacoes-termos" className="w-full">
-            <TabsList className="w-full grid grid-cols-3">
-              <TabsTrigger value="anotacoes-termos" className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                Anotações e Termos ({filterByYear(anotacoesETermos).length})
-              </TabsTrigger>
-              <TabsTrigger value="elogios" className="flex items-center gap-2">
-                <Award className="h-4 w-4" />
-                Elogios ({filterByYear(elogiosHist).length})
-              </TabsTrigger>
-              <TabsTrigger value="faltas" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Faltas ({filterByYear(faltasHist).length})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="anotacoes-termos" className="mt-4">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                {renderHistoryTable(anotacoesETermos, 'anotacoes-termos')}
-              </motion.div>
-            </TabsContent>
-
-            <TabsContent value="elogios" className="mt-4">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                {renderHistoryTable(elogiosHist, 'elogios')}
-              </motion.div>
-            </TabsContent>
-
-            <TabsContent value="faltas" className="mt-4">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                {renderHistoryTable(faltasHist, 'faltas')}
-              </motion.div>
-            </TabsContent>
-          </Tabs>
-        </motion.div>
-      </div>
-    </Layout>
-  );
+        </Layout>
+        );
 }
