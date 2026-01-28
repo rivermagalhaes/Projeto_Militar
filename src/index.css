@@ -151,6 +151,7 @@
   .card-military {
     @apply bg-card rounded-lg border-l-4 border-l-accent shadow-md transition-all duration-300;
     box-shadow: var(--shadow-card);
+    @apply p-4 sm:p-6;
   }
 
   .card-military:hover {
@@ -224,7 +225,7 @@
 
   /* Stats card */
   .stats-card {
-    @apply bg-card rounded-xl p-6 border border-border transition-all duration-300;
+    @apply bg-card rounded-xl p-4 sm:p-6 border border-border transition-all duration-300;
     box-shadow: var(--shadow-card);
   }
 

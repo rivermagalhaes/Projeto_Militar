@@ -494,9 +494,9 @@ export default function AlunoDetalhe() {
         <div className="card-military p-6">
           {/* Badge Matrícula no topo */}
           {aluno.matricula && (
-            <div className="flex justify-end mb-4">
-              <span className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-mono font-bold shadow-lg">
-                <span className="text-lg">#</span>
+            <div className="flex justify-start md:justify-end mb-4">
+              <span className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1.5 md:px-4 md:py-2 rounded-lg font-mono font-bold shadow-lg text-sm md:text-base">
+                <span className="text-base md:text-lg">#</span>
                 Matrícula: {aluno.matricula}
               </span>
             </div>
@@ -506,7 +506,7 @@ export default function AlunoDetalhe() {
             {/* Avatar Foto */}
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="relative mx-auto md:mx-0 w-32 h-32 rounded-full overflow-hidden border-4 border-accent bg-muted shrink-0 cursor-pointer group shadow-xl"
+              className="relative mx-auto md:mx-0 w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-accent bg-muted shrink-0 cursor-pointer group shadow-xl"
             >
               {aluno.foto_url ? (
                 <img
@@ -516,7 +516,7 @@ export default function AlunoDetalhe() {
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/10">
-                  <span className="text-4xl font-serif font-bold text-primary">
+                  <span className="text-2xl md:text-4xl font-serif font-bold text-primary">
                     {aluno.nome.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
                   </span>
                 </div>
@@ -535,8 +535,8 @@ export default function AlunoDetalhe() {
             </div>
 
             {/* Grade Display - Large centered card com animações e mensagem */}
-            <div className="bg-muted/50 rounded-xl p-6 border border-border min-w-[280px]">
-              <p className="text-sm text-muted-foreground mb-3 text-center font-medium">Nota Disciplinar</p>
+            <div className="bg-muted/50 rounded-xl p-4 md:p-6 border border-border min-w-full md:min-w-[280px]">
+              <p className="text-xs md:text-sm text-muted-foreground mb-3 text-center font-medium">Nota Disciplinar</p>
               <GradeDisplay
                 nota={Number(aluno.nota_disciplinar)}
                 size="lg"

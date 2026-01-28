@@ -165,7 +165,7 @@ export function Navbar() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
-              className="lg:hidden fixed inset-x-0 top-[3.5rem] bg-navy-dark/95 backdrop-blur-lg border-t border-white/10 z-50 overflow-hidden flex flex-col max-h-[calc(100vh-3.5rem)] shadow-2xl"
+              className="lg:hidden fixed inset-x-0 top-[3.5rem] bg-white/95 backdrop-blur-xl border-t border-navy/10 z-50 overflow-hidden flex flex-col max-h-[calc(100vh-3.5rem)] shadow-2xl"
             >
               <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
                 {allItems.map((item, index) => {
@@ -183,8 +183,8 @@ export function Navbar() {
                         to={item.path}
                         onClick={() => setMobileMenuOpen(false)}
                         className={`flex items-center justify-between p-4 rounded-xl text-sm font-bold transition-all ${isActive
-                          ? 'bg-accent text-white shadow-lg'
-                          : 'text-gray-200 hover:bg-white/10'
+                          ? 'bg-navy text-white shadow-lg'
+                          : 'text-navy-dark hover:bg-navy/5'
                           }`}
                       >
                         <div className="flex items-center gap-3">
@@ -210,7 +210,7 @@ export function Navbar() {
                 </motion.button>
               </div>
 
-              <div className="p-4 bg-navy/20 border-t border-white/5 text-[10px] text-center text-gray-500 uppercase tracking-widest font-bold">
+              <div className="p-4 bg-navy/5 border-t border-navy/5 text-[10px] text-center text-navy/40 uppercase tracking-widest font-bold">
                 CMTO - Gestão Escolar v2.0
               </div>
             </motion.div>

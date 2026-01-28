@@ -209,8 +209,8 @@ export default function Dashboard() {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-lg text-navy break-words line-clamp-1">{e.titulo}</h3>
-                  {e.descricao && <p className="text-muted-foreground text-sm mt-1 break-words line-clamp-2">{e.descricao}</p>}
+                  <h3 className="font-bold text-base md:text-lg text-navy break-words line-clamp-1">{e.titulo}</h3>
+                  {e.descricao && <p className="text-muted-foreground text-xs md:text-sm mt-1 break-words line-clamp-2">{e.descricao}</p>}
                 </div>
 
                 {e.imagem_url && (

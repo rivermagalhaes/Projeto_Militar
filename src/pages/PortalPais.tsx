@@ -58,7 +58,7 @@ export default function PortalPais() {
                         <div className="flex items-center gap-4">
                             <img src={brasao} alt="Brasão CMTO" className="h-16 w-auto" />
                             <div>
-                                <h1 className="text-2xl font-bold text-navy">Portal da Família</h1>
+                                <h1 className="text-xl md:text-2xl font-bold text-navy">Portal da Família</h1>
                                 <p className="text-muted-foreground">
                                     {dashboardData.aluno?.nome} | Turma: {dashboardData.aluno?.turma?.nome || 'N/A'}
                                 </p>
@@ -73,21 +73,21 @@ export default function PortalPais() {
                         {/* Stats Cards Dashboard */}
                         <div className="stats-card">
                             <h3 className="text-sm font-semibold text-muted-foreground uppercase mb-2">Nota Disciplinar</h3>
-                            <div className="text-3xl font-bold text-olive">
+                            <div className="text-2xl md:text-3xl font-bold text-olive">
                                 {dashboardData.aluno?.nota_disciplinar?.toFixed(2) || '0.00'}
                             </div>
                             <p className="text-xs text-muted-foreground mt-2">Média atual do aluno</p>
                         </div>
                         <div className="stats-card">
                             <h3 className="text-sm font-semibold text-muted-foreground uppercase mb-2">Total de Faltas</h3>
-                            <div className="text-3xl font-bold text-red-600">
+                            <div className="text-2xl md:text-3xl font-bold text-red-600">
                                 {dashboardData.faltas?.length || 0}
                             </div>
                             <p className="text-xs text-muted-foreground mt-2">Dias de ausência registrados</p>
                         </div>
                         <div className="stats-card">
                             <h3 className="text-sm font-semibold text-muted-foreground uppercase mb-2">Ano Letivo</h3>
-                            <div className="text-3xl font-bold text-navy">
+                            <div className="text-2xl md:text-3xl font-bold text-navy">
                                 {new Date().getFullYear()}
                             </div>
                             <p className="text-xs text-muted-foreground mt-2">Corrente</p>
@@ -107,7 +107,7 @@ export default function PortalPais() {
                                                 <span className="font-bold uppercase text-[10px] shrink-0">{anot.tipo}</span>
                                                 <span className="text-muted-foreground text-[10px] whitespace-nowrap">{new Date(anot.created_at).toLocaleDateString()}</span>
                                             </div>
-                                            <p className="text-sm break-words">{anot.descricao}</p>
+                                            <p className="text-xs md:text-sm break-words">{anot.descricao}</p>
                                         </div>
                                     ))
                                 ) : (
@@ -129,8 +129,8 @@ export default function PortalPais() {
                                                 <p className="text-xs uppercase">{format(new Date(item.data_evento + 'T12:00:00'), 'MMM', { locale: ptBR })}</p>
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="font-bold text-sm text-navy break-words">{item.titulo}</div>
-                                                {item.descricao && <p className="text-xs text-muted-foreground mt-1 break-words">{item.descricao}</p>}
+                                                <div className="font-bold text-[13px] md:text-sm text-navy break-words">{item.titulo}</div>
+                                                {item.descricao && <p className="text-[11px] md:text-xs text-muted-foreground mt-1 break-words">{item.descricao}</p>}
                                             </div>
                                         </div>
                                     ))

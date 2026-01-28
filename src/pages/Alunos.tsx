@@ -629,11 +629,11 @@ export default function Alunos() {
                     onClick={() => navigate(`/alunos/${aluno.id}`)}
                     className="card-military p-4 cursor-pointer group"
                   >
-                    <div className="flex items-start gap-3">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
                       {/* Avatar */}
                       <motion.div
                         whileHover={{ scale: 1.1 }}
-                        className="relative w-12 h-12 rounded-full overflow-hidden bg-muted border-2 border-border group-hover:border-accent transition-all shrink-0"
+                        className="relative w-16 h-16 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-muted border-2 border-border group-hover:border-accent transition-all shrink-0"
                       >
                         {aluno.foto_url && aluno.consentimento_imagem ? (
                           <img src={aluno.foto_url} alt={aluno.nome} className="w-full h-full object-cover" />
@@ -652,7 +652,7 @@ export default function Alunos() {
                             {aluno.matricula}
                           </span>
                         )}
-                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors whitespace-normal break-words text-base sm:text-sm">
                           {aluno.nome}
                         </h3>
                         <p className="text-sm text-muted-foreground mt-0.5">
@@ -660,7 +660,7 @@ export default function Alunos() {
                         </p>
                       </div>
 
-                      <div className="text-right shrink-0">
+                      <div className="shrink-0 mt-2 sm:mt-0">
                         <GradeBadge nota={aluno.nota_disciplinar} />
                       </div>
                     </div>
