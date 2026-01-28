@@ -173,12 +173,11 @@ export default function Monitores() {
         try {
             const email = `${username.trim().toLowerCase()}@cmto.interno`;
 
-            const { data, error } = await supabase.functions.invoke('admin-create-user', {
+            const { data, error } = await supabase.functions.invoke('create-monitor', {
                 body: {
-                    email,
+                    username: username.trim(),
                     password,
-                    fullName: fullName.trim(),
-                    role: 'monitor'
+                    full_name: fullName.trim()
                 }
             });
 
