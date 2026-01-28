@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { BookOpen, Users, ArrowLeft, Loader2, User, Search } from 'lucide-react';
+import { BookOpen, Users, ArrowLeft, Loader2, User, Search, Award, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GradeBadge } from '@/components/GradeDisplay';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { ELOGIO_VALORES } from '@/utils/gradeCalculation';
 
 interface Aluno {
     id: string;
@@ -24,10 +29,14 @@ interface Turma {
 
 export default function TurmaDetalhe() {
     const { id } = useParams();
+    const { user } = useAuth();
+    const { toast } = useToast();
     const [turma, setTurma] = useState<Turma | null>(null);
     const [alunos, setAlunos] = useState<Aluno[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [bulkActionType, setBulkActionType] = useState<string>('');
+    const [isBulkProcessing, setIsBulkProcessing] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -51,6 +60,58 @@ export default function TurmaDetalhe() {
             setAlunos([]); // Safety fallback
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleBulkAction = async () => {
+        if (!bulkActionType) {
+            toast({ title: 'Selecione uma ação', variant: 'destructive' });
+            return;
+        }
+
+        if (!confirm(`Deseja aplicar esta ação a todos os ${alunos.length} alunos?`)) return;
+
+        setIsBulkProcessing(true);
+        try {
+            const anoLetivo = turma?.ano_letivo || new Date().getFullYear();
+            const delta = ELOGIO_VALORES[bulkActionType] || 0;
+
+            if (delta === 0) throw new Error('Ação inválida');
+
+            // Itera por cada aluno para garantir histórico individual
+            const promises = alunos.map(async (aluno) => {
+                // 1. Inserir elogio
+                const { error: elogioError } = await supabase.from('elogios').insert({
+                    aluno_id: aluno.id,
+                    tipo: bulkActionType as any,
+                    descricao: 'Lançamento coletivo para a turma',
+                    lancado_por: user?.id,
+                    ano_letivo: anoLetivo
+                });
+
+                if (elogioError) throw elogioError;
+
+                // 2. Atualizar nota (incremental)
+                const notaAtual = Number(aluno.nota_disciplinar) || 0;
+                const novaNota = notaAtual + delta;
+                const { error: updateError } = await supabase
+                    .from('alunos')
+                    .update({ nota_disciplinar: novaNota })
+                    .eq('id', aluno.id);
+
+                if (updateError) throw updateError;
+            });
+
+            await Promise.all(promises);
+
+            toast({ title: 'Ação aplicada com sucesso!', description: `${alunos.length} alunos atualizados.` });
+            fetchData(); // Recarregar para mostrar novas notas
+            setBulkActionType('');
+        } catch (error: any) {
+            console.error('Erro na ação em lote:', error);
+            toast({ title: 'Erro ao aplicar ação coletiva', description: error.message, variant: 'destructive' });
+        } finally {
+            setIsBulkProcessing(false);
         }
     };
 
@@ -93,15 +154,47 @@ export default function TurmaDetalhe() {
                 </Button>
             </div>
 
-            <div className="card-military p-4">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Buscar aluno nesta turma..."
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="pl-10"
-                    />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="card-military p-4">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase mb-2 block">Cerca Rápida</Label>
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Buscar aluno nesta turma..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            className="pl-10"
+                        />
+                    </div>
+                </div>
+
+                <div className="card-military p-4 border-accent/20 bg-accent/5">
+                    <Label className="text-xs font-bold text-accent uppercase mb-2 block">Lançamento em Lote (Toda a Turma)</Label>
+                    <div className="flex gap-2">
+                        <Select value={bulkActionType} onValueChange={setBulkActionType}>
+                            <SelectTrigger className="flex-1">
+                                <SelectValue placeholder="Selecione a ação coletiva..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="coletivo">🎉 Elogio Coletivo (+0.20)</SelectItem>
+                                <SelectItem value="individual">⭐ Elogio Individual (+0.50)</SelectItem>
+                                <SelectItem value="mencao_honrosa">🏆 Menção Honrosa (+1.00)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Button
+                            className="btn-gold"
+                            size="sm"
+                            onClick={handleBulkAction}
+                            disabled={isBulkProcessing || alunos.length === 0}
+                        >
+                            {isBulkProcessing ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <ShieldCheck className="h-4 w-4 mr-2" />
+                            )}
+                            Aplicar
+                        </Button>
+                    </div>
                 </div>
             </div>
 

@@ -15,41 +15,38 @@ export interface TermoItem {
 }
 
 /**
- * Função PURA de cálculo de nota.
- * Regras:
- * 1. Nota Base Inicial = 8.0
- * 2. Soma todos os elogios (bônus)
- * 3. Subtrai todos os termos (punições)
- * 4. O resultado final NUNCA pode ser menor que 8.0 (Piso)
- * 5. Não há limite máximo (Teto)
- * 
- * @param elogios Lista de elogios do aluno
- * @param termos Lista de termos do aluno
- * @returns Nota final calculada (number)
+ * Fornece apenas o delta (soma/subtração) dos itens de histórico.
  */
-export const calculateGrade = (elogios: ElogioItem[] | null, termos: TermoItem[] | null): number => {
-    let nota = 8.0;
+export const calculateGradeDelta = (elogios: ElogioItem[] | null, termos: TermoItem[] | null): number => {
+    let delta = 0;
 
-    // Converter inputs para arrays seguros
     const safeElogios = Array.isArray(elogios) ? elogios : [];
     const safeTermos = Array.isArray(termos) ? termos : [];
 
-    // Aplicar Bônus (Elogios)
     safeElogios.forEach(e => {
-        const valor = ELOGIO_VALORES[e.tipo] || 0;
-        nota += Number(valor);
+        delta += ELOGIO_VALORES[e.tipo] || 0;
     });
 
-    // Aplicar Punições (Termos)
     safeTermos.forEach(t => {
         const desconto = Number(t.valor_desconto);
         if (!isNaN(desconto)) {
-            nota -= desconto;
+            delta -= desconto;
         }
     });
 
-    // Regra de Piso: Nota mínima é 8.0
-    // Se o cálculo der 6.0, retorna 8.0
-    // Se der 10.0, retorna 10.0
-    return Math.max(8.0, nota);
+    return delta;
+};
+
+/**
+ * Função de cálculo de nota.
+ * RESPEITA O VALOR BASE INFORMADO.
+ * 
+ * @param baseNota A nota inicial/atual do aluno
+ * @param elogios Lista de elogios
+ * @param termos Lista de termos
+ * @returns Nota final calculada
+ */
+export const calculateGrade = (baseNota: number, elogios: ElogioItem[] | null, termos: TermoItem[] | null): number => {
+    const delta = calculateGradeDelta(elogios, termos);
+    return baseNota + delta;
 };

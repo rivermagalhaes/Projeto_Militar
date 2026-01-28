@@ -195,49 +195,61 @@ export default function AlunoDetalhe() {
 
 
 
-  const calcularNota = async () => {
+  /**
+   * Atualiza a nota do aluno no banco de dados de forma incremental.
+   * Respeita o valor ATUAL salvo no banco.
+   * 
+   * @param delta Valor a ser somado ou subtraído da nota atual
+   */
+  const atualizarNotaIncremental = async (delta: number) => {
+    if (delta === 0) return;
+
     try {
-      // Busca histórico completo para recálculo preciso
-      const { data: elogios, error: errElogios } = await supabase
-        .from('elogios')
-        .select('tipo')
-        .eq('aluno_id', id);
+      // 1. Busca nota atual diretamente do banco para garantir consistência
+      const { data: currentData, error: fetchError } = await supabase
+        .from('alunos')
+        .select('nota_disciplinar')
+        .eq('id', id)
+        .single();
 
-      const { data: termos, error: errTermos } = await supabase
-        .from('termos')
-        .select('valor_desconto')
-        .eq('aluno_id', id);
+      if (fetchError) throw fetchError;
 
-      if (errElogios) throw errElogios;
-      if (errTermos) throw errTermos;
+      const notaAtual = Number(currentData.nota_disciplinar) || 0;
+      const novaNota = notaAtual + delta;
 
-      // Chama a função PURA de cálculo
-      const novaNota = calculateGrade(elogios, termos);
-
-      // Atualiza no banco
+      // 2. Persiste o novo valor
       const { error: updateError } = await supabase
         .from('alunos')
         .update({ nota_disciplinar: novaNota })
         .eq('id', id);
 
-      if (updateError) {
-        console.error('Erro ao salvar nota:', updateError);
-        toast({
-          title: 'Erro ao salvar nota',
-          description: 'O cálculo foi feito mas não pôde ser salvo. Verifique suas permissões.',
-          variant: 'destructive'
-        });
-      } else {
-        // Atualiza estado local imediatamente para refletir na UI
-        setAluno((prev: any) => prev ? { ...prev, nota_disciplinar: novaNota } : null);
-      }
+      if (updateError) throw updateError;
 
-      // Busca dados atualizados para garantir sincronia
-      fetchAluno();
+      // 3. Sincroniza estado local
+      setAluno((prev: any) => prev ? { ...prev, nota_disciplinar: novaNota } : null);
 
     } catch (error) {
-      console.error('Erro no fluxo de cálculo:', error);
+      console.error('Erro ao atualizar nota incremental:', error);
+      toast({
+        title: 'Erro no cálculo da nota',
+        description: 'Não foi possível atualizar o valor final. O registro foi salvo, mas a nota pode estar dessincronizada.',
+        variant: 'destructive'
+      });
     }
+  };
+
+  /**
+   * Recálculo total de segurança (PODE ser usado se necessário, 
+   * mas priorizamos o incremental).
+   * ATENÇÃO: Se usarmos esta função, precisamos do valor inicial do aluno.
+   * Como não temos campo de valor inicial separado, esta função assume o valor
+   * que estava no momento da criação.
+   */
+  const recalcularNotaTotal = async () => {
+    // Nota: Esta função só é 100% segura se tivermos um campo 'nota_inicial'.
+    // Com a regra de "partir do valor salvo", o ideal é o incremental.
+    // Manteremos apenas para debug se necessário, mas as ações usarão incremental.
+    fetchAluno();
   };
 
   const getCurrentAnoLetivo = (): number => {
@@ -252,7 +264,9 @@ export default function AlunoDetalhe() {
     setSaving(true);
 
     const anoLetivo = getCurrentAnoLetivo();
+    let deltaTotal = 0;
 
+    // 1. Inserir anotação
     await supabase.from('anotacoes').insert({
       aluno_id: id as string,
       tipo: anotacaoTipo as 'leve' | 'media' | 'grave' | 'gravissima',
@@ -261,31 +275,43 @@ export default function AlunoDetalhe() {
       ano_letivo: anoLetivo
     });
 
-    // Verificar acúmulos e aplicar termos
+    // 2. Verificar acúmulos e aplicar termos (que geram desconto na nota)
     const { data: anotacoes } = await supabase.from('anotacoes').select('tipo').eq('aluno_id', id as string);
     const leves = anotacoes?.filter(a => a.tipo === 'leve').length || 0;
     const medias = anotacoes?.filter(a => a.tipo === 'media').length || 0;
 
     if (anotacaoTipo === 'grave') {
-      await supabase.from('termos').insert({ aluno_id: id, tipo: 'grave', valor_desconto: 0.50, motivo: 'Anotação grave' });
+      const valor = 0.50;
+      await supabase.from('termos').insert({ aluno_id: id, tipo: 'grave', valor_desconto: valor, motivo: 'Anotação grave' });
+      deltaTotal -= valor;
     } else if (anotacaoTipo === 'gravissima') {
-      await supabase.from('termos').insert({ aluno_id: id, tipo: 'gravissimo', valor_desconto: 1.00, motivo: 'Anotação gravíssima' });
+      const valor = 1.00;
+      await supabase.from('termos').insert({ aluno_id: id, tipo: 'gravissimo', valor_desconto: valor, motivo: 'Anotação gravíssima' });
+      deltaTotal -= valor;
     }
 
-    // Acúmulo de 5 leves = termo leve
+    // Acúmulos
     if (leves >= 5 && leves % 5 === 0) {
-      await supabase.from('termos').insert({ aluno_id: id, tipo: 'leve', valor_desconto: 0.20, motivo: '5 anotações leves acumuladas' });
+      const valor = 0.20;
+      await supabase.from('termos').insert({ aluno_id: id, tipo: 'leve', valor_desconto: valor, motivo: '5 anotações leves acumuladas' });
+      deltaTotal -= valor;
     }
-    // Acúmulo de 3 médias = termo médio
     if (medias >= 3 && medias % 3 === 0) {
-      await supabase.from('termos').insert({ aluno_id: id, tipo: 'medio', valor_desconto: 0.30, motivo: '3 anotações médias acumuladas' });
+      const valor = 0.30;
+      await supabase.from('termos').insert({ aluno_id: id, tipo: 'medio', valor_desconto: valor, motivo: '3 anotações médias acumuladas' });
+      deltaTotal -= valor;
     }
-    // 3 leves + 1 média = termo médio
     if (leves >= 3 && medias >= 1 && (leves + medias) % 4 === 0) {
-      await supabase.from('termos').insert({ aluno_id: id, tipo: 'medio', valor_desconto: 0.30, motivo: '3 leves + 1 média acumuladas' });
+      const valor = 0.30;
+      await supabase.from('termos').insert({ aluno_id: id, tipo: 'medio', valor_desconto: valor, motivo: '3 leves + 1 média acumuladas' });
+      deltaTotal -= valor;
     }
 
-    await calcularNota();
+    // 3. Atualizar nota se houver delta
+    if (deltaTotal !== 0) {
+      await atualizarNotaIncremental(deltaTotal);
+    }
+
     fetchAllHistorico();
     setAnotacaoTipo('');
     setAnotacaoDesc('');
@@ -298,6 +324,7 @@ export default function AlunoDetalhe() {
     setSaving(true);
 
     const anoLetivo = getCurrentAnoLetivo();
+    const delta = ELOGIO_VALORES[elogioTipo] || 0;
 
     await supabase.from('elogios').insert({
       aluno_id: id as string,
@@ -306,7 +333,8 @@ export default function AlunoDetalhe() {
       lancado_por: user?.id,
       ano_letivo: anoLetivo
     });
-    await calcularNota();
+
+    await atualizarNotaIncremental(delta);
     fetchAllHistorico();
     setElogioTipo('');
     setElogioDesc('');
@@ -341,6 +369,16 @@ export default function AlunoDetalhe() {
 
   const handleDeleteHistorico = async (item: HistoricoItem) => {
     let error = null;
+    let deltaReverso = 0;
+
+    // Calcular o delta inverso para anular a operação
+    if (item.category === 'elogio') {
+      deltaReverso = -(ELOGIO_VALORES[item.tipo] || 0);
+    } else if (item.category === 'termo') {
+      // O 'peso' no frontend é exibido como "-0.50", então transformamos de volta
+      deltaReverso = Math.abs(Number(item.peso));
+    }
+
     if (item.category === 'anotacao') {
       const result = await supabase.from('anotacoes').delete().eq('id', item.id);
       error = result.error;
@@ -354,10 +392,13 @@ export default function AlunoDetalhe() {
       const result = await supabase.from('faltas').delete().eq('id', item.id);
       error = result.error;
     }
+
     if (error) {
       toast({ title: 'Erro ao remover registro', variant: 'destructive' });
     } else {
-      await calcularNota();
+      if (deltaReverso !== 0) {
+        await atualizarNotaIncremental(deltaReverso);
+      }
       fetchAllHistorico();
       toast({ title: 'Registro removido com sucesso!' });
     }
