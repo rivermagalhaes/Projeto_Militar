@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { BookOpen, Users, ArrowLeft, Loader2, User, Search, Award, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { BookOpen, Users, ArrowLeft, Loader2, User, Search, Award, AlertTriangle, ShieldCheck, FileText, Calendar, MoveHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,6 +10,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { format } from 'date-fns';
+import { DateInput } from '@/components/DateInput';
 import { ELOGIO_VALORES } from '@/utils/gradeCalculation';
 
 interface Aluno {
@@ -33,11 +37,22 @@ export default function TurmaDetalhe() {
     const { toast } = useToast();
     const [turma, setTurma] = useState<Turma | null>(null);
     const [alunos, setAlunos] = useState<Aluno[]>([]);
+    const [turmas, setTurmas] = useState<Turma[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
-    const [bulkActionType, setBulkActionType] = useState<string>('');
     const [isBulkProcessing, setIsBulkProcessing] = useState(false);
     const navigate = useNavigate();
+
+    // Form states for bulk actions (mirrored from AlunoDetalhe)
+    const [anotacaoTipo, setAnotacaoTipo] = useState<string>('');
+    const [anotacaoDesc, setAnotacaoDesc] = useState('');
+    const [elogioTipo, setElogioTipo] = useState<string>('');
+    const [elogioDesc, setElogioDesc] = useState('');
+    const [faltaDataInicio, setFaltaDataInicio] = useState<Date | undefined>();
+    const [faltaDataFim, setFaltaDataFim] = useState<Date | undefined>();
+    const [faltaMotivo, setFaltaMotivo] = useState('');
+    const [faltaDetalhes, setFaltaDetalhes] = useState('');
+    const [novaTurmaId, setNovaTurmaId] = useState('');
 
     useEffect(() => {
         fetchData();
@@ -47,69 +62,186 @@ export default function TurmaDetalhe() {
         if (!id) return;
         setLoading(true);
         try {
-            const [{ data: turmaData }, { data: alunosData }] = await Promise.all([
+            const [{ data: turmaData }, { data: alunosData }, { data: allTurmas }] = await Promise.all([
                 supabase.from('turmas').select('*').eq('id', id).single(),
-                supabase.from('alunos').select('*').eq('turma_id', id).order('nome')
+                supabase.from('alunos').select('*').eq('turma_id', id).order('nome'),
+                supabase.from('turmas').select('*').order('ano_letivo', { ascending: false })
             ]);
 
             if (turmaData) setTurma(turmaData);
             if (alunosData) setAlunos(alunosData as Aluno[]);
-            else setAlunos([]); // Fallback to empty array
+            if (allTurmas) setTurmas(allTurmas as Turma[]);
         } catch (error) {
             console.error('Erro ao carregar dados da turma:', error);
-            setAlunos([]); // Safety fallback
+            setAlunos([]);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleBulkAction = async () => {
-        if (!bulkActionType) {
-            toast({ title: 'Selecione uma ação', variant: 'destructive' });
+    const handleBulkAnotacao = async () => {
+        if (!anotacaoTipo || !anotacaoDesc.trim()) {
+            toast({ title: 'Preencha todos os campos', variant: 'destructive' });
             return;
         }
-
-        if (!confirm(`Deseja aplicar esta ação a todos os ${alunos.length} alunos?`)) return;
+        if (!confirm(`Deseja aplicar esta anotação a todos os ${alunos.length} alunos?`)) return;
 
         setIsBulkProcessing(true);
         try {
             const anoLetivo = turma?.ano_letivo || new Date().getFullYear();
-            const delta = ELOGIO_VALORES[bulkActionType] || 0;
 
-            if (delta === 0) throw new Error('Ação inválida');
+            for (const aluno of alunos) {
+                let deltaTotal = 0;
 
-            // Itera por cada aluno para garantir histórico individual
-            const promises = alunos.map(async (aluno) => {
-                // 1. Inserir elogio
-                const { error: elogioError } = await supabase.from('elogios').insert({
+                // 1. Inserir anotação
+                await supabase.from('anotacoes').insert({
                     aluno_id: aluno.id,
-                    tipo: bulkActionType as any,
-                    descricao: 'Lançamento coletivo para a turma',
+                    tipo: anotacaoTipo as any,
+                    descricao: anotacaoDesc,
                     lancado_por: user?.id,
                     ano_letivo: anoLetivo
                 });
 
-                if (elogioError) throw elogioError;
+                // 2. Acúmulos (Busca individual para lógica exata)
+                const { data: anotacoes } = await supabase.from('anotacoes').select('tipo').eq('aluno_id', aluno.id);
+                const leves = anotacoes?.filter(a => a.tipo === 'leve').length || 0;
+                const medias = anotacoes?.filter(a => a.tipo === 'media').length || 0;
 
-                // 2. Atualizar nota (incremental)
-                const notaAtual = Number(aluno.nota_disciplinar) || 0;
-                const novaNota = notaAtual + delta;
-                const { error: updateError } = await supabase
-                    .from('alunos')
-                    .update({ nota_disciplinar: novaNota })
-                    .eq('id', aluno.id);
+                if (anotacaoTipo === 'grave') {
+                    const valor = 0.50;
+                    await supabase.from('termos').insert({ aluno_id: aluno.id, tipo: 'grave', valor_desconto: valor, motivo: 'Anotação grave (coletiva)' });
+                    deltaTotal -= valor;
+                } else if (anotacaoTipo === 'gravissima') {
+                    const valor = 1.00;
+                    await supabase.from('termos').insert({ aluno_id: aluno.id, tipo: 'gravissimo', valor_desconto: valor, motivo: 'Anotação gravíssima (coletiva)' });
+                    deltaTotal -= valor;
+                }
 
-                if (updateError) throw updateError;
-            });
+                if (leves >= 5 && leves % 5 === 0) {
+                    const valor = 0.20;
+                    await supabase.from('termos').insert({ aluno_id: aluno.id, tipo: 'leve', valor_desconto: valor, motivo: '5 anotações leves acumuladas' });
+                    deltaTotal -= valor;
+                }
+                if (medias >= 3 && medias % 3 === 0) {
+                    const valor = 0.30;
+                    await supabase.from('termos').insert({ aluno_id: aluno.id, tipo: 'medio', valor_desconto: valor, motivo: '3 anotações médias acumuladas' });
+                    deltaTotal -= valor;
+                }
 
-            await Promise.all(promises);
+                // 3. Atualizar nota
+                if (deltaTotal !== 0) {
+                    const currentGrade = Number(aluno.nota_disciplinar) || 0;
+                    await supabase.from('alunos').update({ nota_disciplinar: currentGrade + deltaTotal }).eq('id', aluno.id);
+                }
+            }
 
-            toast({ title: 'Ação aplicada com sucesso!', description: `${alunos.length} alunos atualizados.` });
-            fetchData(); // Recarregar para mostrar novas notas
-            setBulkActionType('');
+            toast({ title: 'Anotações registradas em lote!' });
+            setAnotacaoTipo('');
+            setAnotacaoDesc('');
+            fetchData();
         } catch (error: any) {
-            console.error('Erro na ação em lote:', error);
-            toast({ title: 'Erro ao aplicar ação coletiva', description: error.message, variant: 'destructive' });
+            toast({ title: 'Erro no lançamento em lote', description: error.message, variant: 'destructive' });
+        } finally {
+            setIsBulkProcessing(false);
+        }
+    };
+
+    const handleBulkElogio = async () => {
+        if (!elogioTipo) {
+            toast({ title: 'Selecione o tipo', variant: 'destructive' });
+            return;
+        }
+        if (!confirm(`Deseja aplicar este elogio a todos os ${alunos.length} alunos?`)) return;
+
+        setIsBulkProcessing(true);
+        try {
+            const anoLetivo = turma?.ano_letivo || new Date().getFullYear();
+            const delta = ELOGIO_VALORES[elogioTipo] || 0;
+
+            for (const aluno of alunos) {
+                await supabase.from('elogios').insert({
+                    aluno_id: aluno.id,
+                    tipo: elogioTipo as any,
+                    descricao: elogioDesc || 'Elogio coletivo para a turma',
+                    lancado_por: user?.id,
+                    ano_letivo: anoLetivo
+                });
+
+                const currentGrade = Number(aluno.nota_disciplinar) || 0;
+                await supabase.from('alunos').update({ nota_disciplinar: currentGrade + delta }).eq('id', aluno.id);
+            }
+
+            toast({ title: 'Elogios registrados em lote!' });
+            setElogioTipo('');
+            setElogioDesc('');
+            fetchData();
+        } catch (error: any) {
+            toast({ title: 'Erro no lançamento em lote', description: error.message, variant: 'destructive' });
+        } finally {
+            setIsBulkProcessing(false);
+        }
+    };
+
+    const handleBulkFalta = async () => {
+        if (!faltaDataInicio || !faltaDataFim || !faltaMotivo) {
+            toast({ title: 'Preencha os campos obrigatórios', variant: 'destructive' });
+            return;
+        }
+        if (!confirm(`Deseja registrar falta para todos os ${alunos.length} alunos?`)) return;
+
+        setIsBulkProcessing(true);
+        try {
+            const anoLetivo = turma?.ano_letivo || new Date().getFullYear();
+
+            for (const aluno of alunos) {
+                await supabase.from('faltas').insert({
+                    aluno_id: aluno.id,
+                    data_inicio: format(faltaDataInicio, 'yyyy-MM-dd'),
+                    data_fim: format(faltaDataFim, 'yyyy-MM-dd'),
+                    motivo: faltaMotivo,
+                    detalhes: faltaDetalhes || 'Falta coletiva registrada pela turma',
+                    lancado_por: user?.id,
+                    ano_letivo: anoLetivo
+                });
+            }
+
+            toast({ title: 'Faltas registradas em lote!' });
+            setFaltaDataInicio(undefined);
+            setFaltaDataFim(undefined);
+            setFaltaMotivo('');
+            setFaltaDetalhes('');
+            fetchData();
+        } catch (error: any) {
+            toast({ title: 'Erro no lançamento em lote', description: error.message, variant: 'destructive' });
+        } finally {
+            setIsBulkProcessing(false);
+        }
+    };
+
+    const handleBulkTransfer = async () => {
+        if (!novaTurmaId) {
+            toast({ title: 'Selecione a turma de destino', variant: 'destructive' });
+            return;
+        }
+        if (novaTurmaId === id) {
+            toast({ title: 'A turma de destino deve ser diferente da atual', variant: 'destructive' });
+            return;
+        }
+        if (!confirm(`Deseja transferir todos os ${alunos.length} alunos para a nova turma?`)) return;
+
+        setIsBulkProcessing(true);
+        try {
+            const { error } = await supabase
+                .from('alunos')
+                .update({ turma_id: novaTurmaId })
+                .eq('turma_id', id);
+
+            if (error) throw error;
+
+            toast({ title: 'Transferência concluída!', description: `${alunos.length} alunos movidos.` });
+            navigate('/turmas');
+        } catch (error: any) {
+            toast({ title: 'Erro na transferência', description: error.message, variant: 'destructive' });
         } finally {
             setIsBulkProcessing(false);
         }
@@ -170,31 +302,86 @@ export default function TurmaDetalhe() {
 
                 <div className="card-military p-4 border-accent/20 bg-accent/5">
                     <Label className="text-xs font-bold text-accent uppercase mb-2 block">Lançamento em Lote (Toda a Turma)</Label>
-                    <div className="flex gap-2">
-                        <Select value={bulkActionType} onValueChange={setBulkActionType}>
-                            <SelectTrigger className="flex-1">
-                                <SelectValue placeholder="Selecione a ação coletiva..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="coletivo">🎉 Elogio Coletivo (+0.20)</SelectItem>
-                                <SelectItem value="individual">⭐ Elogio Individual (+0.50)</SelectItem>
-                                <SelectItem value="mencao_honrosa">🏆 Menção Honrosa (+1.00)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Button
-                            className="btn-gold"
-                            size="sm"
-                            onClick={handleBulkAction}
-                            disabled={isBulkProcessing || alunos.length === 0}
-                        >
-                            {isBulkProcessing ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                                <ShieldCheck className="h-4 w-4 mr-2" />
-                            )}
-                            Aplicar
-                        </Button>
-                    </div>
+
+                    <Tabs defaultValue="anotacoes" className="w-full">
+                        <TabsList className="grid grid-cols-4 bg-muted/50 mb-4 h-9">
+                            <TabsTrigger value="anotacoes" className="text-[10px] uppercase font-bold">Anotações</TabsTrigger>
+                            <TabsTrigger value="elogios" className="text-[10px] uppercase font-bold">Elogios</TabsTrigger>
+                            <TabsTrigger value="faltas" className="text-[10px] uppercase font-bold">Faltas</TabsTrigger>
+                            <TabsTrigger value="transfer" className="text-[10px] uppercase font-bold">Mudar</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="anotacoes" className="space-y-3 mt-0">
+                            <Select value={anotacaoTipo} onValueChange={setAnotacaoTipo}>
+                                <SelectTrigger className="h-9"><SelectValue placeholder="Tipo da anotação" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="leve">Leve (acumula)</SelectItem>
+                                    <SelectItem value="media">Média (acumula)</SelectItem>
+                                    <SelectItem value="grave">Grave (-0.50)</SelectItem>
+                                    <SelectItem value="gravissima">Gravíssima (-1.00)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Textarea
+                                placeholder="Descrição da anotação coletiva..."
+                                value={anotacaoDesc}
+                                onChange={e => setAnotacaoDesc(e.target.value)}
+                                className="min-h-[60px] text-sm"
+                            />
+                            <Button className="w-full btn-military h-9" size="sm" onClick={handleBulkAnotacao} disabled={isBulkProcessing || alunos.length === 0}>
+                                {isBulkProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4 mr-2" />}
+                                Aplicar a Todos
+                            </Button>
+                        </TabsContent>
+
+                        <TabsContent value="elogios" className="space-y-3 mt-0">
+                            <Select value={elogioTipo} onValueChange={setElogioTipo}>
+                                <SelectTrigger className="h-9"><SelectValue placeholder="Tipo do elogio" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="coletivo">🎉 Coletivo (+0.20)</SelectItem>
+                                    <SelectItem value="individual">⭐ Individual (+0.40)</SelectItem>
+                                    <SelectItem value="mencao_honrosa">🏆 Menção Honrosa (+0.60)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Textarea
+                                placeholder="Descrição do elogio coletivo..."
+                                value={elogioDesc}
+                                onChange={e => setElogioDesc(e.target.value)}
+                                className="min-h-[60px] text-sm"
+                            />
+                            <Button className="w-full btn-gold h-9" size="sm" onClick={handleBulkElogio} disabled={isBulkProcessing || alunos.length === 0}>
+                                {isBulkProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Award className="h-4 w-4 mr-2" />}
+                                Elogiar Todos
+                            </Button>
+                        </TabsContent>
+
+                        <TabsContent value="faltas" className="space-y-2 mt-0">
+                            <div className="grid grid-cols-2 gap-2">
+                                <DateInput label="Início" date={faltaDataInicio} setDate={setFaltaDataInicio} />
+                                <DateInput label="Fim" date={faltaDataFim} setDate={setFaltaDataFim} />
+                            </div>
+                            <Input placeholder="Motivo da falta coletiva" value={faltaMotivo} onChange={e => setFaltaMotivo(e.target.value)} className="h-9 text-sm" />
+                            <Button className="w-full h-9 bg-blue-600 hover:bg-blue-700 text-white" size="sm" onClick={handleBulkFalta} disabled={isBulkProcessing || alunos.length === 0}>
+                                {isBulkProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Calendar className="h-4 w-4 mr-2" />}
+                                Registrar Faltas
+                            </Button>
+                        </TabsContent>
+
+                        <TabsContent value="transfer" className="space-y-3 mt-0">
+                            <Label className="text-[10px] text-muted-foreground uppercase">Nova Turma de Destino</Label>
+                            <Select value={novaTurmaId} onValueChange={setNovaTurmaId}>
+                                <SelectTrigger className="h-9"><SelectValue placeholder="Selecione a turma..." /></SelectTrigger>
+                                <SelectContent>
+                                    {turmas.filter(t => t.id !== id).map(t => (
+                                        <SelectItem key={t.id} value={t.id}>{t.nome} - {t.ano_letivo}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Button className="w-full h-9 bg-orange-600 hover:bg-orange-700 text-white" size="sm" onClick={handleBulkTransfer} disabled={isBulkProcessing || alunos.length === 0}>
+                                {isBulkProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoveHorizontal className="h-4 w-4 mr-2" />}
+                                Transferir Alunos
+                            </Button>
+                        </TabsContent>
+                    </Tabs>
                 </div>
             </div>
 
