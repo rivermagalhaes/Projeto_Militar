@@ -51,7 +51,6 @@ serve(async (req) => {
     });
 
     if (createError) {
-      // Tratamento específico para usuário já existente
       if (createError.message?.includes('already registered') || createError.status === 422) {
         return new Response(
           JSON.stringify({ error: 'Usuário ou Monitor já cadastrado com este nome.' }),
@@ -63,23 +62,8 @@ serve(async (req) => {
 
     const userId = authData.user.id;
 
-    // 4. Inserir Role "monitor" (Tabela user_roles)
-    const { error: roleError } = await supabaseAdmin
-      .from('user_roles')
-      .insert({
-        user_id: userId,
-        role: 'monitor'
-      });
-
-    if (roleError) {
-      // Se falhar o role, tentamos limpar o usuário criado para não deixar orfão (Clean Up)
-      await supabaseAdmin.auth.admin.deleteUser(userId);
-      throw new Error(`Erro ao atribuir permissão de monitor: ${roleError.message}`);
-    }
-
-    // 5. Inserir Perfil (Compatibilidade com Frontend existente)
-    // Embora não solicitado explicitamente, é necessário para a listagem funcionar
-    if (full_name) {
+    try {
+      // 4. Inserir Perfil (ETAPA 2 OBRIGATÓRIA)
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .insert({
@@ -88,10 +72,23 @@ serve(async (req) => {
           nome: full_name
         });
 
-      if (profileError) {
-        console.error('Erro não crítico ao criar profile:', profileError);
-        // Não bloqueia o sucesso da operação principal
-      }
+      if (profileError) throw new Error(`Erro ao criar perfil: ${profileError.message}`);
+
+      // 5. Inserir Role "monitor" (ETAPA 3 OBRIGATÓRIA - Apenas após perfil)
+      const { error: roleError } = await supabaseAdmin
+        .from('user_roles')
+        .insert({
+          user_id: userId,
+          role: 'monitor'
+        });
+
+      if (roleError) throw new Error(`Erro ao atribuir permissão de monitor: ${roleError.message}`);
+
+    } catch (innerError) {
+      // ROLLBACK: Se perfil ou role falharem, removemos o usuário do Auth
+      console.error('Erro detectado. Iniciando rollback de usuário...', innerError);
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+      throw innerError;
     }
 
     // 6. Retorno de Sucesso padronizado
@@ -101,6 +98,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
+    console.error('Erro na Edge Function:', error);
     return new Response(
       JSON.stringify({ error: error.message || 'Falha interna no servidor.' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
