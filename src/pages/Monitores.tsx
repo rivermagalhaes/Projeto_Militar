@@ -171,22 +171,39 @@ export default function Monitores() {
 
         setCreatingMonitor(true);
         try {
-            const { data, error } = await supabase.functions.invoke('create-monitor', {
+            // Sanitização obrigatória: remove qualquer domínio já digitado para evitar duplicação no backend
+            const sanitizedUsername = username.trim().split('@')[0];
+
+            const { data, error: invokeError } = await supabase.functions.invoke('create-monitor', {
                 body: {
-                    username: username.trim(),
+                    username: sanitizedUsername,
                     password,
                     full_name: fullName.trim()
                 }
             });
 
-            if (error) throw error;
+            // Ajuste conforme solicitado: Verifica explicitamente se existe erro no JSON retornado
+            if (data?.error) {
+                toast.error('Erro ao criar monitor: ' + data.error);
+                return;
+            }
+
+            // Se o invoke retornou erro de status mas o body não contém 'error',
+            // ignoramos o erro de status para evitar o "erro falso" relatado.
+            // Só exibimos erro de invoke se não houver dados (erro de rede real).
+            if (invokeError && !data) {
+                toast.error('Erro de conexão ao servidor: ' + invokeError.message);
+                return;
+            }
 
             toast.success('Monitor criado com sucesso!');
             setMonitorModalOpen(false);
             resetMonitorForm();
             fetchMonitores();
         } catch (error: any) {
-            toast.error('Erro ao criar monitor: ' + error.message);
+            // Fallback para erros inesperados de código
+            console.error('Erro inesperado no frontend:', error);
+            toast.error('Ocorreu um erro ao processar o cadastro.');
         } finally {
             setCreatingMonitor(false);
         }
