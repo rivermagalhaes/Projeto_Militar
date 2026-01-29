@@ -14,6 +14,7 @@ import { ptBR } from 'date-fns/locale';
 import { Plus, Trash2, Loader2, Calendar, ImagePlus, X, ZoomIn } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogDescription } from '@/components/ui/alert-dialog';
+import { safeDate, safeArray } from '@/utils/safe-rendering';
 
 interface Evento {
   id: string;
@@ -59,7 +60,7 @@ export default function Agenda() {
     if (data) {
       setEventos(data as Evento[]);
       // Extract unique years
-      const anos = [...new Set(data.map(e => new Date(e.data_evento).getFullYear()))].sort((a, b) => b - a);
+      const anos = [...new Set(data.map(e => (safeDate(e.data_evento) || new Date()).getFullYear()))].sort((a, b) => b - a);
       setAnosDisponiveis(anos);
     }
     setLoading(false);
@@ -145,9 +146,10 @@ export default function Agenda() {
     setImageModalOpen(true);
   };
 
-  const filteredEventos = eventos.filter(e => {
+  const filteredEventos = safeArray(eventos).filter(e => {
     if (filterAno === 'all') return true;
-    return new Date(e.data_evento).getFullYear().toString() === filterAno;
+    const d = safeDate(e.data_evento);
+    return d ? d.getFullYear().toString() === filterAno : false;
   });
 
   return (
@@ -265,8 +267,8 @@ export default function Agenda() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4 flex-1">
                     <div className="text-center bg-navy text-white px-3 py-2 rounded-lg min-w-[60px] shrink-0">
-                      <p className="text-2xl font-bold">{format(new Date(e.data_evento + 'T12:00:00'), 'dd')}</p>
-                      <p className="text-xs uppercase">{format(new Date(e.data_evento + 'T12:00:00'), 'MMM', { locale: ptBR })}</p>
+                      <p className="text-2xl font-bold">{format(safeDate(e.data_evento + 'T12:00:00') || new Date(), 'dd')}</p>
+                      <p className="text-xs uppercase">{format(safeDate(e.data_evento + 'T12:00:00') || new Date(), 'MMM', { locale: ptBR })}</p>
                     </div>
 
                     <div className="flex-1">

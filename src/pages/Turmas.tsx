@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Layout } from '@/components/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Plus, Search, Loader2, Users, GraduationCap, Trash2 } from 'lucide-react';
+import { safeArray, safeString } from '@/utils/safe-rendering';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -132,8 +133,8 @@ export default function Turmas() {
         }
     };
 
-    const filteredTurmas = (turmas || []).filter(t =>
-        (t.nome || '').toLowerCase().includes(search.toLowerCase()) ||
+    const filteredTurmas = safeArray(turmas).filter(t =>
+        safeString(t.nome).toLowerCase().includes(search.toLowerCase()) ||
         (t.ano_letivo || '').toString().includes(search)
     );
 

@@ -27,6 +27,7 @@ import { DateInput } from '@/components/DateInput';
 import { format } from 'date-fns';
 import { Search, Plus, Users, Loader2, Archive, RotateCcw, Trash2, Camera, User, IdCard } from 'lucide-react';
 import { GradeBadge } from '@/components/GradeDisplay';
+import { safeString, safeArray } from '@/utils/safe-rendering';
 
 interface Aluno {
   id: string;
@@ -329,9 +330,9 @@ export default function Alunos() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const filteredAlunos = alunos.filter((aluno) => {
-    const matchNome = aluno.nome.toLowerCase().includes(searchNome.toLowerCase()) ||
-      aluno.matricula?.toLowerCase().includes(searchNome.toLowerCase());
+  const filteredAlunos = safeArray(alunos).filter((aluno) => {
+    const matchNome = safeString(aluno.nome).toLowerCase().includes(searchNome.toLowerCase()) ||
+      safeString(aluno.matricula).toLowerCase().includes(searchNome.toLowerCase());
     const matchTurma = filterTurma === 'all' || aluno.turma_id === filterTurma;
     const matchAno = filterAno === 'all' || aluno.ano_entrada.toString() === filterAno;
     return matchNome && matchTurma && matchAno;

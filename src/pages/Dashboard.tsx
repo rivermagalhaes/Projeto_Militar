@@ -22,6 +22,7 @@ import { BackupExport } from '@/components/BackupExport';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { safeDate, safeFormat, safeArray, safeString } from '@/utils/safe-rendering';
 
 interface Stats {
   totalAlunos: number;
@@ -112,7 +113,13 @@ export default function Dashboard() {
       fimSemana.setDate(inicioSemana.getDate() + 6);
 
       const aniversariantes = (alunosData || []).filter((aluno) => {
-        const nascimento = new Date(aluno.data_nascimento + 'T12:00:00');
+        // Safe check for birth date
+        if (!aluno.data_nascimento) return false;
+
+        // Append time to ensure local date parsing works as expected for YYYY-MM-DD
+        const nascimento = safeDate(aluno.data_nascimento + 'T12:00:00');
+        if (!nascimento) return false;
+
         const aniversarioEsteAno = new Date(
           hoje.getFullYear(),
           nascimento.getMonth(),
@@ -161,9 +168,10 @@ export default function Dashboard() {
     setImageModalOpen(true);
   };
 
-  const filteredEventos = eventos.filter(e => {
+  const filteredEventos = safeArray(eventos).filter(e => {
     if (filterAno === 'all') return true;
-    return new Date(e.data_evento).getFullYear().toString() === filterAno;
+    const date = safeDate(e.data_evento);
+    return date ? date.getFullYear().toString() === filterAno : false;
   });
 
   const statsCards = [
@@ -204,8 +212,8 @@ export default function Dashboard() {
             >
               <div className="flex items-start gap-4">
                 <div className="text-center bg-navy text-white px-3 py-2 rounded-lg min-w-[60px] shrink-0">
-                  <p className="text-2xl font-bold">{format(new Date(e.data_evento + 'T12:00:00'), 'dd')}</p>
-                  <p className="text-xs uppercase">{format(new Date(e.data_evento + 'T12:00:00'), 'MMM', { locale: ptBR })}</p>
+                  <p className="text-2xl font-bold">{format(safeDate(e.data_evento + 'T12:00:00') || new Date(), 'dd')}</p>
+                  <p className="text-xs uppercase">{format(safeDate(e.data_evento + 'T12:00:00') || new Date(), 'MMM', { locale: ptBR })}</p>
                 </div>
 
                 <div className="flex-1 min-w-0">

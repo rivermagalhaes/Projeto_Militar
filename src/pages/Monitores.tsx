@@ -23,6 +23,7 @@ import {
     Upload,
     ExternalLink
 } from "lucide-react";
+import { safeDate, safeFormat, safeArray, safeString } from '@/utils/safe-rendering';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -453,14 +454,14 @@ export default function Monitores() {
         }
     };
 
-    const filteredAccess = accessData.filter(item =>
-        item.aluno?.nome?.toLowerCase().includes(accessSearch.toLowerCase()) ||
-        item.matricula.includes(accessSearch)
+    const filteredAccess = safeArray(accessData).filter(item =>
+        safeString(item.aluno?.nome).toLowerCase().includes(accessSearch.toLowerCase()) ||
+        safeString(item.matricula).includes(accessSearch)
     );
 
-    const filteredMissingAccess = alunosSemAcesso.filter(item =>
-        item.nome.toLowerCase().includes(accessSearch.toLowerCase()) ||
-        item.matricula.includes(accessSearch)
+    const filteredMissingAccess = safeArray(alunosSemAcesso).filter(item =>
+        safeString(item.nome).toLowerCase().includes(accessSearch.toLowerCase()) ||
+        safeString(item.matricula).includes(accessSearch)
     );
 
     return (
@@ -602,7 +603,7 @@ export default function Monitores() {
                                     </TableHeader>
                                     <TableBody>
                                         <AnimatePresence mode="popLayout">
-                                            {monitores.map((monitor, index) => (
+                                            {safeArray(monitores).map((monitor, index) => (
                                                 <motion.tr
                                                     key={monitor.id}
                                                     initial={{ opacity: 0, x: -20 }}
@@ -614,18 +615,18 @@ export default function Monitores() {
                                                     <TableCell className="py-5 px-6">
                                                         <div className="flex items-center gap-4">
                                                             <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-navy to-navy-light flex items-center justify-center text-gold font-bold text-lg uppercase shadow-lg group-hover:scale-110 transition-transform">
-                                                                {monitor.nome.substring(0, 2)}
+                                                                {safeString(monitor?.nome).substring(0, 2)}
                                                             </div>
                                                             <div>
-                                                                <div className="text-lg font-bold text-navy">{monitor.nome}</div>
-                                                                <div className="text-sm text-muted-foreground">Membro desde {new Date(monitor.created_at).toLocaleDateString()}</div>
+                                                                <div className="text-lg font-bold text-navy">{safeString(monitor?.nome)}</div>
+                                                                <div className="text-sm text-muted-foreground">Membro desde {safeDate(monitor?.created_at)?.toLocaleDateString() || '-'}</div>
                                                             </div>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="py-5 px-6">
                                                         <div className="flex flex-col">
-                                                            <span className="text-navy/80 font-medium">Usuário: {monitor.email.split('@')[0]}</span>
-                                                            <span className="text-[10px] text-muted-foreground">ID: {monitor.id.substring(0, 8)}...</span>
+                                                            <span className="text-navy/80 font-medium">Usuário: {safeString(monitor?.email).split('@')[0]}</span>
+                                                            <span className="text-[10px] text-muted-foreground">ID: {safeString(monitor?.id).substring(0, 8)}...</span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="py-5 px-6 text-center">

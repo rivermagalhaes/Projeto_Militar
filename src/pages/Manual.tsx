@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { FileSearch, Download, ExternalLink, Loader2, BookOpen, ShieldCheck, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { safeString } from '@/utils/safe-rendering';
 
 interface Manual {
     nome: string;
@@ -74,7 +75,7 @@ export default function Manual() {
                                     <FileSearch size={32} />
                                 </div>
                                 <div className="flex-1 text-center md:text-left">
-                                    <h3 className="font-bold text-lg text-navy">{manual.nome}</h3>
+                                    <h3 className="font-bold text-lg text-navy">{safeString(manual.nome)}</h3>
                                     <p className="text-xs text-muted-foreground">Documento oficial atualizado para o ano letivo corrente.</p>
                                 </div>
                                 <div className="flex gap-3">

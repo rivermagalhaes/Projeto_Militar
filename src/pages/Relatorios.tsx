@@ -21,8 +21,9 @@ export default function Relatorios() {
         const { count: classCount } = await supabase.from('turmas').select('*', { count: 'exact', head: true });
         const { data: grades } = await supabase.from('alunos').select('nota_disciplinar');
 
-        const avg = grades && grades.length > 0
-            ? grades.reduce((acc, curr) => acc + (curr.nota_disciplinar || 0), 0) / grades.length
+        const validGrades = (grades || []).filter(g => g && typeof g.nota_disciplinar === 'number');
+        const avg = validGrades.length > 0
+            ? validGrades.reduce((acc, curr) => acc + (curr.nota_disciplinar || 0), 0) / validGrades.length
             : 0;
 
         setStats({
