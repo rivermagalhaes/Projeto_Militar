@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Shield, Lock, Mail, Loader2, ArrowLeft } from 'lucide-react';
+import { Shield, Lock, User, Loader2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import brasao from '@/assets/brasao-cmto.png';
 
 export default function Login() {
-    const [email, setEmail] = useState('');
+    const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { signIn } = useAuth();
@@ -20,7 +20,7 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            const { error } = await signIn(email, password);
+            const { error } = await signIn(identifier, password);
             if (error) {
                 toast.error('Erro ao entrar. Verifique suas credenciais.');
             } else {
@@ -56,13 +56,13 @@ export default function Login() {
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-navy flex items-center gap-2">
-                                <Mail size={16} /> E-mail
+                                <User size={16} /> Usuário
                             </label>
                             <Input
-                                type="email"
-                                placeholder="exemplo@cmto.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                type="text"
+                                placeholder="Seu usuário de acesso"
+                                value={identifier}
+                                onChange={(e) => setIdentifier(e.target.value)}
                                 required
                                 className="bg-muted/50 border-olive/20 focus:border-olive focus:ring-olive"
                             />
@@ -103,11 +103,7 @@ export default function Login() {
                                 <Shield size={14} className="text-gold" /> Dica de Acesso ao Sistema
                             </h3>
                             <p className="text-xs text-secondary-foreground/70 leading-relaxed">
-                                Para fins de teste e demonstração, você pode utilizar:
-                                <br />
-                                <span className="font-bold text-navy">E-mail:</span> qualquer-um@cmto.com
-                                <br />
-                                <span className="font-bold text-navy">Senha:</span> 123456
+                                Use o seu nome de usuário e senha cadastrados pelo administrador.
                             </p>
                         </div>
                     </div>

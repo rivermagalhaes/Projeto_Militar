@@ -125,15 +125,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (identifier: string, password: string) => {
     setLoading(true);
     try {
+      // Se não houver @, tratamos como usuário interno e concatenamos o domínio
+      const email = identifier.includes('@') ? identifier : `${identifier.trim().toLowerCase()}@cmto.interno`;
+
       // Tentar login real no Supabase
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
         // BYPASS DE DESENVOLVIMENTO: Se as credenciais de teste forem usadas e o Supabase falhar
-        if (email === 'qualquer-um@cmto.com' && password === '123456') {
+        if (email === 'qualquer-um@cmto.interno' && password === '123456') {
           console.warn('Usando bypass de desenvolvimento para conta de teste.');
           const fakeUser = {
             id: '00000000-0000-0000-0000-000000000000',

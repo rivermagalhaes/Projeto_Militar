@@ -171,8 +171,6 @@ export default function Monitores() {
 
         setCreatingMonitor(true);
         try {
-            const email = `${username.trim().toLowerCase()}@cmto.interno`;
-
             const { data, error } = await supabase.functions.invoke('create-monitor', {
                 body: {
                     username: username.trim(),
@@ -515,9 +513,9 @@ export default function Monitores() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="username">Usuário (para login)</Label>
+                                        <Label htmlFor="username">Usuário (login)</Label>
                                         <div className="relative">
-                                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                             <Input
                                                 id="username"
                                                 value={username}
@@ -527,9 +525,6 @@ export default function Monitores() {
                                                 required
                                             />
                                         </div>
-                                        <p className="text-[10px] text-muted-foreground px-1">
-                                            Email interno: <strong>{username || 'usuario'}@cmto.interno</strong>
-                                        </p>
                                     </div>
 
                                     <div className="space-y-2">
@@ -612,7 +607,7 @@ export default function Monitores() {
                                                     </TableCell>
                                                     <TableCell className="py-5 px-6">
                                                         <div className="flex flex-col">
-                                                            <span className="text-navy/80 font-medium">{monitor.email}</span>
+                                                            <span className="text-navy/80 font-medium">Usuário: {monitor.email.split('@')[0]}</span>
                                                             <span className="text-[10px] text-muted-foreground">ID: {monitor.id.substring(0, 8)}...</span>
                                                         </div>
                                                     </TableCell>
