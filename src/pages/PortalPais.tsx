@@ -19,7 +19,8 @@ export default function PortalPais() {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const isStudentPortal = location.pathname === '/aluno';
+    // Fix: Use 'includes' to handle trailing slashes or query params robustly
+    const isStudentPortal = location.pathname.includes('/aluno');
 
     const handleAccess = async (e: React.FormEvent) => {
         e.preventDefault();
