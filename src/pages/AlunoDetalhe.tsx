@@ -595,7 +595,7 @@ export default function AlunoDetalhe() {
 
         {/* Mobile View - Cards */}
         <div className="md:hidden space-y-4">
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence>
             {filteredItems.map(item => (
               <motion.div
                 key={`card-${item.category}-${item.id}`}

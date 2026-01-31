@@ -810,7 +810,7 @@ export default function Monitores() {
 
                         <TabsContent value="sem_acesso" className="mt-0">
                             <div className="grid gap-4">
-                                <AnimatePresence mode='popLayout'>
+                                <AnimatePresence>
                                     {filteredMissingAccess.map((aluno, index) => (
                                         <motion.div
                                             key={aluno.id}
