@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { FileText, Download, TrendingUp, Users, AlertTriangle, CheckCircle } from 'lucide-react';
+import { FileText, Download, TrendingUp, Users, AlertTriangle, CheckCircle, Filter, ArrowLeft, Printer } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function Relatorios() {
     const [stats, setStats] = useState({
@@ -11,6 +12,7 @@ export default function Relatorios() {
         mediaDisciplinar: 0,
         totalOcorrencias: 0
     });
+    const [showGenerator, setShowGenerator] = useState(false);
 
     useEffect(() => {
         fetchStats();
@@ -30,9 +32,13 @@ export default function Relatorios() {
             totalAlunos: studentCount || 0,
             totalTurmas: classCount || 0,
             mediaDisciplinar: avg,
-            totalOcorrencias: 0 // Placeholder until ocorrencias table is found
+            totalOcorrencias: 0
         });
     };
+
+    if (showGenerator) {
+        return <RelatorioGerador onBack={() => setShowGenerator(false)} />;
+    }
 
     return (
         <div className="space-y-6">
@@ -44,9 +50,7 @@ export default function Relatorios() {
                     </h1>
                     <p className="text-muted-foreground mt-1">Análise de desempenho e dados gerais da unidade</p>
                 </div>
-                <Button className="btn-military">
-                    <Download className="mr-2 h-4 w-4" /> Exportar PDF Geral
-                </Button>
+                {/* Export button removed from here */}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -82,7 +86,9 @@ export default function Relatorios() {
                     <p className="text-muted-foreground text-sm max-w-xs mt-2">
                         Gere listagens filtradas por turma, comportamento ou data de entrada para reuniões e conselhos.
                     </p>
-                    <Button variant="outline" className="mt-6">Acessar Gerador</Button>
+                    <Button onClick={() => setShowGenerator(true)} className="mt-6 btn-military">
+                        Acessar Gerador
+                    </Button>
                 </div>
             </div>
         </div>
@@ -101,5 +107,134 @@ function StatCard({ title, value, icon: Icon, color }: any) {
             </div>
             <div className="text-3xl font-bold text-navy">{value}</div>
         </motion.div>
+    );
+}
+
+function RelatorioGerador({ onBack }: { onBack: () => void }) {
+    const [turmas, setTurmas] = useState<any[]>([]);
+    const [selectedTurma, setSelectedTurma] = useState('all');
+    const [alunos, setAlunos] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchTurmas = async () => {
+            const { data } = await supabase.from('turmas').select('*').order('nome');
+            if (data) setTurmas(data);
+        };
+        fetchTurmas();
+        fetchRelatorio();
+    }, []);
+
+    const fetchRelatorio = async () => {
+        setLoading(true);
+        let query = supabase.from('alunos').select('*, turma:turmas(nome)').order('nome');
+
+        if (selectedTurma && selectedTurma !== 'all') {
+            query = query.eq('turma_id', selectedTurma);
+        }
+
+        const { data } = await query;
+        if (data) setAlunos(data);
+        setLoading(false);
+    };
+
+    // Re-fetch when filter changes
+    useEffect(() => {
+        fetchRelatorio();
+    }, [selectedTurma]);
+
+    const handlePrint = () => {
+        window.print();
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center justify-between no-print">
+                <div className="flex items-center gap-4">
+                    <Button variant="ghost" onClick={onBack}>
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+                    </Button>
+                    <div>
+                        <h1 className="text-2xl font-bold text-navy">Gerador de Relatórios</h1>
+                        <p className="text-muted-foreground text-sm">Filtre os dados e exporte o PDF.</p>
+                    </div>
+                </div>
+                <Button onClick={handlePrint} className="btn-military">
+                    <Printer className="mr-2 h-4 w-4" /> Exportar / Imprimir PDF
+                </Button>
+            </div>
+
+            <div className="card-military p-6 no-print">
+                <h3 className="font-bold text-sm text-navy mb-4 flex items-center gap-2">
+                    <Filter size={16} /> Filtros
+                </h3>
+                <div className="flex gap-4">
+                    <div className="w-[200px]">
+                        <Select value={selectedTurma} onValueChange={setSelectedTurma}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Filtrar por Turma" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todas as Turmas</SelectItem>
+                                {turmas.map(t => (
+                                    <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+            </div>
+
+            {/* Printable Area */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border print:shadow-none print:border-none">
+                <div className="hidden print:block mb-6 text-center border-b pb-4">
+                    <h1 className="text-xl font-bold uppercase text-navy">Relatório de Alunos</h1>
+                    <p className="text-sm text-muted-foreground">Gerado em {new Date().toLocaleDateString()}</p>
+                    {selectedTurma !== 'all' && (
+                        <p className="text-sm font-bold mt-1">
+                            Filtro: {turmas.find(t => t.id === selectedTurma)?.nome}
+                        </p>
+                    )}
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b">
+                            <tr>
+                                <th className="px-4 py-3">Matrícula</th>
+                                <th className="px-4 py-3">Nome</th>
+                                <th className="px-4 py-3">Turma</th>
+                                <th className="px-4 py-3 text-right">Nota Disc.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr><td colSpan={4} className="p-4 text-center">Carregando...</td></tr>
+                            ) : alunos.map((aluno) => (
+                                <tr key={aluno.id} className="border-b hover:bg-muted/50">
+                                    <td className="px-4 py-3 font-mono">{aluno.matricula}</td>
+                                    <td className="px-4 py-3 font-medium">{aluno.nome}</td>
+                                    <td className="px-4 py-3">{aluno.turma?.nome || '-'}</td>
+                                    <td className="px-4 py-3 text-right font-bold text-navy">
+                                        {aluno.nota_disciplinar?.toFixed(2)}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                {!loading && alunos.length === 0 && (
+                    <p className="text-center text-muted-foreground mt-8 italic">Nenhum aluno encontrado.</p>
+                )}
+            </div>
+
+            <style>{`
+                @media print {
+                    .no-print { display: none !important; }
+                    body { background: white; }
+                    .card-military { box-shadow: none; border: none; }
+                }
+            `}</style>
+        </div>
     );
 }
