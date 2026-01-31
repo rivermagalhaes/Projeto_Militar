@@ -34,12 +34,42 @@ export default function PortalPais() {
                 const cleanMatricula = matricula.trim();
                 const cleanNascimento = nascimento; // Input type="date" ensures YYYY-MM-DD
 
+                console.group('🔍 DEBUG LOGIN ALUNO');
+                console.log('1. Raw Inputs:', { matricula, nascimento });
+                console.log('2. Types:', { typeMatricula: typeof matricula, typeNasc: typeof nascimento });
+                console.log('3. Sanitized:', { cleanMatricula, cleanNascimento });
+                console.log('4. Querying Supabase: "alunos" WHERE matricula =', cleanMatricula, 'AND data_nascimento =', cleanNascimento);
+
                 const { data: aluno, error: alunoError } = await supabase
                     .from('alunos')
                     .select('*, turma:turmas(*)')
                     .eq('matricula', cleanMatricula) // Compare exact trimmed string
                     .eq('data_nascimento', cleanNascimento)
                     .maybeSingle();
+
+                console.log('5. Query Result:', { aluno, error: alunoError });
+
+                if (alunoError) {
+                    console.error('❌ Supabase Error:', alunoError);
+                    throw alunoError;
+                }
+
+                if (!aluno) {
+                    console.warn('⚠️ Aluno not found with these credentials.');
+                    // Try to debug WHY it failed - check if matricula exists without date
+                    const { data: checkMatricula } = await supabase.from('alunos').select('id, data_nascimento').eq('matricula', cleanMatricula).maybeSingle();
+                    console.log('6. Existence Check (Matricula Only):', checkMatricula);
+                    if (checkMatricula) {
+                        console.log('   -> Matricula exists! Date in DB:', checkMatricula.data_nascimento);
+                        console.log('   -> Comparison:', `'${cleanNascimento}' (Input) vs '${checkMatricula.data_nascimento}' (DB)`);
+                        console.log('   -> Match?', cleanNascimento === checkMatricula.data_nascimento);
+                    } else {
+                        console.log('   -> Matricula DOES NOT exist in DB.');
+                    }
+                } else {
+                    console.log('✅ Aluno Found:', aluno.nome);
+                }
+                console.groupEnd();
 
                 if (alunoError) throw alunoError;
 
