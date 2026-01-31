@@ -31,7 +31,7 @@ export default function Landing() {
             title: 'Portal do Aluno',
             description: 'Consulta de notas, avisos e material didático.',
             icon: UserRound,
-            path: '/pais', // Shared with portal pais for now as it uses the same logic
+            path: '/aluno', // Separate route for students
             color: 'bg-accent',
             hoverColor: 'hover:bg-accent/80'
         }

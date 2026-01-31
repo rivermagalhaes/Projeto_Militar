@@ -602,7 +602,7 @@ export default function Monitores() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        <AnimatePresence mode="popLayout">
+                                        <AnimatePresence>
                                             {safeArray(monitores).map((monitor, index) => (
                                                 <motion.tr
                                                     key={monitor.id}

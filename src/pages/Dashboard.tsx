@@ -200,7 +200,7 @@ export default function Dashboard() {
 
     return (
       <div className="space-y-4">
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence>
           {filteredEventos.map((e, i) => (
             <motion.div
               key={e.id}

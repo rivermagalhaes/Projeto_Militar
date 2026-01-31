@@ -42,6 +42,7 @@ function App() {
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/pais" element={<PortalPais />} />
+              <Route path="/aluno" element={<PortalPais />} />
               <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
 
               {/* Private Routes with Layout and Protection */}

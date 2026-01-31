@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { calculateGrade, ELOGIO_VALORES } from '@/utils/gradeCalculation';
+import { calculateGrade, ELOGIO_VALORES, calculateAccumulationTerms } from '@/utils/gradeCalculation';
 import { Layout } from '@/components/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { ArrowLeft, Loader2, Trash2, Award, AlertTriangle, FileText, Calendar, Filter } from 'lucide-react';
+import { ArrowLeft, Loader2, Trash2, Award, AlertTriangle, FileText, Calendar, Filter, Camera } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -85,11 +85,61 @@ export default function AlunoDetalhe() {
   const [faltaMotivo, setFaltaMotivo] = useState('');
   const [faltaDetalhes, setFaltaDetalhes] = useState('');
 
+  // Photo upload
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     fetchAluno();
     fetchTurmas();
     fetchAllHistorico();
   }, [id]);
+
+  const handlePhotoUpdate = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+      toast({ title: 'Apenas JPG ou PNG são permitidos', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Imagem muito grande (máx. 5MB)', variant: 'destructive' });
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      const fileName = `${aluno?.matricula || 'foto'}-${Date.now()}.${file.name.split('.').pop()}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('fotos_alunos')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('fotos_alunos')
+        .getPublicUrl(fileName);
+
+      const photoUrl = urlData.publicUrl;
+
+      const { error: updateError } = await supabase
+        .from('alunos')
+        .update({ foto_url: photoUrl })
+        .eq('id', id);
+
+      if (updateError) throw updateError;
+
+      setAluno((prev: any) => ({ ...prev, foto_url: photoUrl }));
+      toast({ title: 'Foto atualizada com sucesso!' });
+    } catch (error: any) {
+      toast({ title: 'Erro ao atualizar foto', description: error.message, variant: 'destructive' });
+    } finally {
+      setUploadingPhoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const fetchAluno = async () => {
     const { data } = await supabase.from('alunos').select('*, turma:turmas(nome, ano_letivo)').eq('id', id).single();
@@ -276,35 +326,32 @@ export default function AlunoDetalhe() {
     });
 
     // 2. Verificar acúmulos e aplicar termos (que geram desconto na nota)
+    // 2. Verificar acúmulos e aplicar termos (que geram desconto na nota)
     const { data: anotacoes } = await supabase.from('anotacoes').select('tipo').eq('aluno_id', id as string);
-    const leves = anotacoes?.filter(a => a.tipo === 'leve').length || 0;
-    const medias = anotacoes?.filter(a => a.tipo === 'media').length || 0;
+    const currentAnotacoes = anotacoes || [];
 
-    if (anotacaoTipo === 'grave') {
-      const valor = 0.50;
-      await supabase.from('termos').insert({ aluno_id: id, tipo: 'grave', valor_desconto: valor, motivo: 'Anotação grave' });
-      deltaTotal -= valor;
-    } else if (anotacaoTipo === 'gravissima') {
-      const valor = 1.00;
-      await supabase.from('termos').insert({ aluno_id: id, tipo: 'gravissimo', valor_desconto: valor, motivo: 'Anotação gravíssima' });
-      deltaTotal -= valor;
+    // NOTE: We just inserted the annotation, so it IS in the list returned by select.
+    // However, our helper calculates accumulation assuming we represent the state BEFORE adding the new one + the new one type.
+    // If we pass the list WITH the new one, it might double count or misinterpret.
+    // "const newLeves = newAnotacaoTipo === 'leve' ? leves + 1 : leves;"
+    // So we must remove ONE instance of the current type from the list to simulate "previous state".
+
+    const SafeAnotacoesForHelper = [...currentAnotacoes];
+    const indexToRemove = SafeAnotacoesForHelper.findIndex(a => a.tipo === anotacaoTipo);
+    if (indexToRemove >= 0) {
+      SafeAnotacoesForHelper.splice(indexToRemove, 1);
     }
 
-    // Acúmulos
-    if (leves >= 5 && leves % 5 === 0) {
-      const valor = 0.20;
-      await supabase.from('termos').insert({ aluno_id: id, tipo: 'leve', valor_desconto: valor, motivo: '5 anotações leves acumuladas' });
-      deltaTotal -= valor;
-    }
-    if (medias >= 3 && medias % 3 === 0) {
-      const valor = 0.30;
-      await supabase.from('termos').insert({ aluno_id: id, tipo: 'medio', valor_desconto: valor, motivo: '3 anotações médias acumuladas' });
-      deltaTotal -= valor;
-    }
-    if (leves >= 3 && medias >= 1 && (leves + medias) % 4 === 0) {
-      const valor = 0.30;
-      await supabase.from('termos').insert({ aluno_id: id, tipo: 'medio', valor_desconto: valor, motivo: '3 leves + 1 média acumuladas' });
-      deltaTotal -= valor;
+    const newTerms = calculateAccumulationTerms(anotacaoTipo, SafeAnotacoesForHelper);
+
+    for (const term of newTerms) {
+      await supabase.from('termos').insert({
+        aluno_id: id,
+        tipo: term.tipo as any,
+        valor_desconto: term.valor_desconto,
+        motivo: term.motivo
+      });
+      deltaTotal -= Number(term.valor_desconto);
     }
 
     // 3. Atualizar nota se houver delta
@@ -679,6 +726,30 @@ export default function AlunoDetalhe() {
               )}
               {/* Glow overlay on hover */}
               <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-[#D4AF37]/30 to-transparent" />
+
+              {/* Photo Update Button */}
+              <div className="absolute bottom-0 right-0 z-20">
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="h-8 w-8 rounded-full shadow-lg border-2 border-background hover:bg-accent hover:text-accent-foreground"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                  disabled={uploadingPhoto}
+                  title="Alterar foto"
+                >
+                  {uploadingPhoto ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                </Button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handlePhotoUpdate}
+                  accept="image/jpeg,image/png,image/jpg"
+                  className="hidden"
+                />
+              </div>
             </motion.div>
 
             <div className="flex-1 text-center md:text-left order-2 md:order-none space-y-2 md:space-y-3">

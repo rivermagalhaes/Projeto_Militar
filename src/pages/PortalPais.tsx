@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Users, Fingerprint, Calendar, Loader2, ArrowLeft, Info, LogOut } from 'lucide-react';
@@ -15,30 +16,95 @@ export default function PortalPais() {
     const [nascimento, setNascimento] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [dashboardData, setDashboardData] = useState<any>(null);
+    const location = useLocation();
     const navigate = useNavigate();
+
+    const isStudentPortal = location.pathname === '/aluno';
 
     const handleAccess = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
 
         try {
-            // Formatar data de YYYY-MM-DD para DD/MM/YYYY
-            const dateParts = nascimento.split('-');
-            const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+            if (isStudentPortal) {
+                // STUDENT ACCESS: Direct query (Does NOT update ultimo_acesso)
 
-            const { data, error } = await supabase.rpc('portal_pais_get_dashboard', {
-                p_matricula: matricula,
-                p_nascimento: formattedDate
-            });
+                // 1. Get Aluno
+                const { data: aluno, error: alunoError } = await supabase
+                    .from('alunos')
+                    .select('*, turma:turmas(*)')
+                    .eq('matricula', matricula)
+                    .eq('data_nascimento', nascimento) // Input type="date" returns YYYY-MM-DD, matches DB
+                    .maybeSingle();
 
-            if (error || !data || data.error) {
-                toast.error(error?.message || data?.error || 'Matrícula ou data de nascimento inválida.');
+                if (alunoError) throw alunoError;
+
+                if (!aluno) {
+                    toast.error('Matrícula ou data de nascimento inválida.');
+                    setIsLoading(false);
+                    return;
+                }
+
+                if (aluno.arquivado) {
+                    toast.error('Aluno arquivado. Entre em contato com a secretaria.');
+                    setIsLoading(false);
+                    return;
+                }
+
+                // 2. Get Faltas
+                const { data: faltas } = await supabase
+                    .from('faltas')
+                    .select('*')
+                    .eq('aluno_id', aluno.id);
+
+                // 3. Get Anotacoes
+                const { data: anotacoes } = await supabase
+                    .from('anotacoes')
+                    .select('*')
+                    .eq('aluno_id', aluno.id)
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                // 4. Get Agenda (Global + Recent)
+                const today = new Date().toISOString().split('T')[0];
+                const { data: agenda } = await supabase
+                    .from('agenda')
+                    .select('*')
+                    .gte('data_evento', today)
+                    .order('data_evento', { ascending: true })
+                    .limit(5);
+
+                setDashboardData({
+                    aluno,
+                    turma: aluno.turma,
+                    faltas: faltas || [],
+                    anotacoes: anotacoes || [],
+                    agenda: agenda || []
+                });
+                toast.success('Acesso concedido (Modo Aluno)!');
+
             } else {
-                toast.success('Acesso concedido!');
-                setDashboardData(data);
+                // PARENT ACCESS: RPC Call (UPDATES ultimo_acesso)
+
+                // Formatar data de YYYY-MM-DD para DD/MM/YYYY expected by RPC
+                const dateParts = nascimento.split('-');
+                const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+
+                const { data, error } = await supabase.rpc('portal_pais_get_dashboard', {
+                    p_matricula: matricula,
+                    p_nascimento: formattedDate
+                });
+
+                if (error || !data || data.error) {
+                    toast.error(error?.message || data?.error || 'Matrícula ou data de nascimento inválida.');
+                } else {
+                    toast.success('Acesso concedido!');
+                    setDashboardData(data);
+                }
             }
         } catch (error) {
-            toast.error('Erro ao conectar ao servidor.');
+            console.error('Login error:', error);
+            toast.error('Matrícula ou data de nascimento incorreta.');
         } finally {
             setIsLoading(false);
         }
@@ -58,7 +124,9 @@ export default function PortalPais() {
                         <div className="flex items-center gap-4">
                             <img src={brasao} alt="Brasão CMTO" className="h-16 w-auto" />
                             <div>
-                                <h1 className="text-xl md:text-2xl font-bold text-navy">Portal da Família</h1>
+                                <h1 className="text-xl md:text-2xl font-bold text-navy">
+                                    {isStudentPortal ? 'Portal do Aluno' : 'Portal da Família'}
+                                </h1>
                                 <p className="text-muted-foreground">
                                     {dashboardData.aluno?.nome} | Turma: {dashboardData.aluno?.turma?.nome || 'N/A'}
                                 </p>
@@ -156,7 +224,9 @@ export default function PortalPais() {
             >
                 <div className="text-center mb-8">
                     <img src={brasao} alt="Brasão CMTO" className="h-24 w-auto mx-auto mb-4 drop-shadow-2xl" />
-                    <h1 className="text-3xl font-serif font-bold text-white">Portal da Família</h1>
+                    <h1 className="text-3xl font-serif font-bold text-white">
+                        {isStudentPortal ? 'Portal do Aluno' : 'Portal da Família'}
+                    </h1>
                     <p className="text-blue-200">Acompanhamento Escolar CMTO</p>
                 </div>
 

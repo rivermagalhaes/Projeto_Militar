@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 import { DateInput } from '@/components/DateInput';
-import { ELOGIO_VALORES } from '@/utils/gradeCalculation';
+import { ELOGIO_VALORES, calculateAccumulationTerms } from '@/utils/gradeCalculation';
 
 interface Aluno {
     id: string;
@@ -104,28 +104,51 @@ export default function TurmaDetalhe() {
 
                 // 2. Acúmulos (Busca individual para lógica exata)
                 const { data: anotacoes } = await supabase.from('anotacoes').select('tipo').eq('aluno_id', aluno.id);
-                const leves = anotacoes?.filter(a => a.tipo === 'leve').length || 0;
-                const medias = anotacoes?.filter(a => a.tipo === 'media').length || 0;
 
-                if (anotacaoTipo === 'grave') {
-                    const valor = 0.50;
-                    await supabase.from('termos').insert({ aluno_id: aluno.id, tipo: 'grave', valor_desconto: valor, motivo: 'Anotação grave (coletiva)' });
-                    deltaTotal -= valor;
-                } else if (anotacaoTipo === 'gravissima') {
-                    const valor = 1.00;
-                    await supabase.from('termos').insert({ aluno_id: aluno.id, tipo: 'gravissimo', valor_desconto: valor, motivo: 'Anotação gravíssima (coletiva)' });
-                    deltaTotal -= valor;
+                // Use new helper function
+                const currentAnotacoes = anotacoes || [];
+                // Note: The helper assumes the new annotation is NOT in the list yet if we were passing in the list *before* insertion.
+                // But here we just inserted it. 
+                // However, our helper `calculateAccumulationTerms` logic:
+                // "const newLeves = newAnotacaoTipo === 'leve' ? leves + 1 : leves;"
+                // It ADDS the new type to the count.
+                // So if we pass the list INCLUDING the new annotation, we would double count.
+                // We should pass the list *excluding* the one we just added, OR adjust the helper.
+                // 
+                // Let's look at the helper again:
+                // "const newLeves = newAnotacaoTipo === 'leve' ? leves + 1 : leves;"
+                // It definitely expects `currentAnotacoes` to be the state BEFORE the new one.
+                // But here we query AFTER insertion.
+                // So we should filter out one instance of the new type from the count or simply pass the list WITHOUT the new one.
+                // Since we query *after*, the list `anotacoes` has the new one.
+                // Let's filter it out for the helper to work as designed, or just pass the list and slightly modify usage?
+                // Actually, simpler: The helper logic allows testing "what if I add X".
+                // If we already added X, we can just say "calculate accumulation based on these".
+                // But the helper adds +1.
+                // 
+                // Let's rely on the fact that we can just pass the counts? No, the helper takes the array.
+                // Let's just fetch the annotations ignoring the one we just created? Hard to distinguish.
+                // BETTER STRATEGY: Fetch annotations *before* finding the new one? No, race conditions.
+                // 
+                // Let's just manually adjust the list passed to the helper.
+                // If we just inserted 'leve', remove one 'leve' from the list we pass to the helper.
+
+                const SafeAnotacoesForHelper = [...currentAnotacoes];
+                const indexToRemove = SafeAnotacoesForHelper.findIndex(a => a.tipo === anotacaoTipo);
+                if (indexToRemove >= 0) {
+                    SafeAnotacoesForHelper.splice(indexToRemove, 1);
                 }
 
-                if (leves >= 5 && leves % 5 === 0) {
-                    const valor = 0.20;
-                    await supabase.from('termos').insert({ aluno_id: aluno.id, tipo: 'leve', valor_desconto: valor, motivo: '5 anotações leves acumuladas' });
-                    deltaTotal -= valor;
-                }
-                if (medias >= 3 && medias % 3 === 0) {
-                    const valor = 0.30;
-                    await supabase.from('termos').insert({ aluno_id: aluno.id, tipo: 'medio', valor_desconto: valor, motivo: '3 anotações médias acumuladas' });
-                    deltaTotal -= valor;
+                const newTerms = calculateAccumulationTerms(anotacaoTipo, SafeAnotacoesForHelper);
+
+                for (const term of newTerms) {
+                    await supabase.from('termos').insert({
+                        aluno_id: aluno.id,
+                        tipo: term.tipo as any,
+                        valor_desconto: term.valor_desconto,
+                        motivo: term.motivo + ' (coletiva)'
+                    });
+                    deltaTotal -= Number(term.valor_desconto);
                 }
 
                 // 3. Atualizar nota

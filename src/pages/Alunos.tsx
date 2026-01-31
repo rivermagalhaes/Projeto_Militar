@@ -619,7 +619,7 @@ export default function Alunos() {
             </motion.div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <AnimatePresence mode="popLayout">
+              <AnimatePresence>
                 {filteredAlunos.map((aluno, index) => (
                   <motion.div
                     key={aluno.id}
@@ -630,17 +630,17 @@ export default function Alunos() {
                     onClick={() => navigate(`/alunos/${aluno.id}`)}
                     className="card-military p-4 cursor-pointer group"
                   >
-                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
+                    <div className="flex flex-row items-center gap-3 text-left">
                       {/* Avatar */}
                       <motion.div
                         whileHover={{ scale: 1.1 }}
-                        className="relative w-16 h-16 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-muted border-2 border-border group-hover:border-accent transition-all shrink-0"
+                        className="relative w-12 h-12 rounded-full overflow-hidden bg-muted border-2 border-border group-hover:border-accent transition-all shrink-0"
                       >
                         {aluno.foto_url && aluno.consentimento_imagem ? (
                           <img src={aluno.foto_url} alt={aluno.nome} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-primary/10">
-                            <User className="h-6 w-6 text-primary" />
+                            <User className="h-5 w-5 text-primary" />
                           </div>
                         )}
                       </motion.div>
@@ -648,20 +648,20 @@ export default function Alunos() {
                       <div className="flex-1 min-w-0">
                         {/* Matrícula Badge */}
                         {aluno.matricula && (
-                          <span className="inline-flex items-center gap-1 text-[10px] bg-accent/20 text-accent px-2 py-0.5 rounded-full mb-1">
+                          <span className="inline-flex items-center gap-1 text-[10px] bg-accent/20 text-accent px-1.5 py-0.5 rounded-full mb-0.5">
                             <IdCard className="h-3 w-3" />
                             {aluno.matricula}
                           </span>
                         )}
-                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors whitespace-normal break-words text-base sm:text-sm">
+                        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors truncate text-sm">
                           {aluno.nome}
                         </h3>
-                        <p className="text-sm text-muted-foreground mt-0.5">
+                        <p className="text-xs text-muted-foreground truncate">
                           {aluno.turma?.nome || 'Sem turma'} • {aluno.turno}
                         </p>
                       </div>
 
-                      <div className="shrink-0 mt-2 sm:mt-0">
+                      <div className="shrink-0">
                         <GradeBadge nota={aluno.nota_disciplinar} />
                       </div>
                     </div>
