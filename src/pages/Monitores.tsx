@@ -722,7 +722,7 @@ export default function Monitores() {
                                 </div>
                             ) : (
                                 <div className="grid gap-4">
-                                    <AnimatePresence mode='popLayout'>
+                                    <AnimatePresence>
                                         {filteredAccess.map((item, index) => (
                                             <motion.div
                                                 key={item.id}

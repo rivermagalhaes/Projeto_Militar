@@ -118,8 +118,8 @@ export default function PortalPais() {
 
     if (dashboardData) {
         return (
-            <div className="min-h-screen bg-background p-4 md:p-8">
-                <div className="container mx-auto max-w-4xl">
+            <div className="min-h-screen bg-background md:p-8">
+                <div className="w-full px-4 md:container md:mx-auto md:max-w-4xl md:px-0 py-4 md:py-0">
                     <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                         <div className="flex items-center gap-4">
                             <img src={brasao} alt="Brasão CMTO" className="h-16 w-auto" />
@@ -163,7 +163,7 @@ export default function PortalPais() {
                     </div>
 
                     <div className="mt-8 grid lg:grid-cols-2 gap-8">
-                        <div className="card-military p-6">
+                        <div className="card-military p-4 md:p-6">
                             <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-navy">
                                 <Info size={20} className="text-accent" /> Últimas Anotações
                             </h2>
@@ -184,7 +184,7 @@ export default function PortalPais() {
                             </div>
                         </div>
 
-                        <div className="card-military p-6">
+                        <div className="card-military p-4 md:p-6">
                             <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-navy">
                                 <Calendar size={20} className="text-accent" /> Próximos Eventos
                             </h2>
@@ -230,7 +230,7 @@ export default function PortalPais() {
                     <p className="text-blue-200">Acompanhamento Escolar CMTO</p>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-2xl p-8 border-t-8 border-accent overflow-hidden relative">
+                <div className="bg-white rounded-xl shadow-2xl p-5 md:p-8 border-t-8 border-accent overflow-hidden relative">
                     <div className="absolute top-0 right-0 p-2 opacity-5">
                         <Users size={80} />
                     </div>

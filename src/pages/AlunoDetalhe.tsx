@@ -519,7 +519,7 @@ export default function AlunoDetalhe() {
               </tr>
             </thead>
             <tbody>
-              <AnimatePresence mode="popLayout">
+              <AnimatePresence>
                 {filteredItems.map(item => (
                   <motion.tr
                     key={`${item.category}-${item.id}`}
