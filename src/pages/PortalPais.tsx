@@ -118,26 +118,31 @@ export default function PortalPais() {
 
     if (dashboardData) {
         return (
-            <div className="min-h-screen bg-background md:p-8">
+            // Mobile: Full width, simple bg. Desktop: Padded, centered.
+            <div className="min-h-screen bg-background w-full md:p-8">
+                {/* Mobile: px-4 padding, w-full. Desktop: Container, centered. */}
                 <div className="w-full px-4 md:container md:mx-auto md:max-w-4xl md:px-0 py-4 md:py-0">
-                    <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                        <div className="flex items-center gap-4">
-                            <img src={brasao} alt="Brasão CMTO" className="h-16 w-auto" />
-                            <div>
-                                <h1 className="text-xl md:text-2xl font-bold text-navy">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4">
+                        <div className="flex items-center gap-3 md:gap-4 w-full md:w-auto">
+                            <img src={brasao} alt="Brasão CMTO" className="h-12 w-auto md:h-16" />
+                            <div className="flex-1 md:flex-none">
+                                <h1 className="text-lg md:text-2xl font-bold text-navy leading-tight">
                                     {isStudentPortal ? 'Portal do Aluno' : 'Portal da Família'}
                                 </h1>
-                                <p className="text-muted-foreground">
-                                    {dashboardData.aluno?.nome} | Turma: {dashboardData.aluno?.turma?.nome || 'N/A'}
+                                <p className="text-xs md:text-base text-muted-foreground truncate">
+                                    {dashboardData.aluno?.nome}
+                                </p>
+                                <p className="text-[10px] md:text-sm text-muted-foreground">
+                                    Turma: {dashboardData.aluno?.turma?.nome || 'N/A'}
                                 </p>
                             </div>
                         </div>
-                        <Button variant="outline" onClick={handleLogout} className="text-red-500 hover:text-red-600 border-red-200">
-                            <LogOut size={18} className="mr-2" /> Sair do Portal
+                        <Button variant="outline" onClick={handleLogout} className="text-red-500 hover:text-red-600 border-red-200 w-full md:w-auto text-xs md:text-sm h-8 md:h-10">
+                            <LogOut size={16} className="mr-2" /> Sair
                         </Button>
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                         {/* Stats Cards Dashboard */}
                         <div className="stats-card">
                             <h3 className="text-sm font-semibold text-muted-foreground uppercase mb-2">Nota Disciplinar</h3>
@@ -162,7 +167,7 @@ export default function PortalPais() {
                         </div>
                     </div>
 
-                    <div className="mt-8 grid lg:grid-cols-2 gap-8">
+                    <div className="mt-6 md:mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
                         <div className="card-military p-4 md:p-6">
                             <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-navy">
                                 <Info size={20} className="text-accent" /> Últimas Anotações
