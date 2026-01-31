@@ -326,9 +326,29 @@ export default function AlunoDetalhe() {
     });
 
     // 2. Verificar acúmulos e aplicar termos (que geram desconto na nota)
-    // 2. Verificar acúmulos e aplicar termos (que geram desconto na nota)
-    const { data: anotacoes } = await supabase.from('anotacoes').select('tipo').eq('aluno_id', id as string);
-    const currentAnotacoes = anotacoes || [];
+    // FIX: Buscar último termo para resetar contagem
+    const { data: lastTermoData } = await supabase
+      .from('termos')
+      .select('created_at')
+      .eq('aluno_id', id as string)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const lastTermoDate = lastTermoData?.created_at ? new Date(lastTermoData.created_at) : null;
+
+    // Buscar anotações com data para filtrar
+    const { data: anotacoes } = await supabase
+      .from('anotacoes')
+      .select('tipo, created_at')
+      .eq('aluno_id', id as string);
+
+    let currentAnotacoes = anotacoes || [];
+
+    // Filter annotations AFTER the last Termo (Hard Reset Rule)
+    if (lastTermoDate) {
+      currentAnotacoes = currentAnotacoes.filter(a => new Date(a.created_at) > lastTermoDate);
+    }
 
     // NOTE: We just inserted the annotation, so it IS in the list returned by select.
     // However, our helper calculates accumulation assuming we represent the state BEFORE adding the new one + the new one type.
