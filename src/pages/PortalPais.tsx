@@ -30,12 +30,15 @@ export default function PortalPais() {
             if (isStudentPortal) {
                 // STUDENT ACCESS: Direct query (Does NOT update ultimo_acesso)
 
-                // 1. Get Aluno
+                // 1. Get Aluno - SANITIZED INPUTS
+                const cleanMatricula = matricula.trim();
+                const cleanNascimento = nascimento; // Input type="date" ensures YYYY-MM-DD
+
                 const { data: aluno, error: alunoError } = await supabase
                     .from('alunos')
                     .select('*, turma:turmas(*)')
-                    .eq('matricula', matricula)
-                    .eq('data_nascimento', nascimento) // Input type="date" returns YYYY-MM-DD, matches DB
+                    .eq('matricula', cleanMatricula) // Compare exact trimmed string
+                    .eq('data_nascimento', cleanNascimento)
                     .maybeSingle();
 
                 if (alunoError) throw alunoError;
