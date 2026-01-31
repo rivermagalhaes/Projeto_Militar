@@ -35,11 +35,12 @@ export default function PortalPais() {
                 const cleanMatricula = String(matricula).trim();
                 const cleanNascimento = nascimento; // Input type="date" garante YYYY-MM-DD
 
+                // BUSCA EM 2 ETAPAS para garantir comparação de data correta
+                // 1. Busca pela matrícula (chave primária lógica)
                 const { data: aluno, error: alunoError } = await supabase
                     .from('alunos')
                     .select('*, turma:turmas(*)')
                     .eq('matricula', cleanMatricula)
-                    .eq('data_nascimento', cleanNascimento)
                     .maybeSingle();
 
                 if (alunoError) {
@@ -49,7 +50,27 @@ export default function PortalPais() {
                     return;
                 }
 
-                if (!aluno) {
+                // 2. Validação da Data (Comparação Robusta)
+                let isValidLogin = false;
+
+                if (aluno && aluno.data_nascimento) {
+                    // Normaliza data do banco (pode vir como timestamp ou data simples)
+                    const dbDate = new Date(aluno.data_nascimento);
+                    const inputDate = new Date(cleanNascimento);
+
+                    // Compara apenas YYYY-MM-DD (ignorando timezone/horas)
+                    // Adiciona 'T12:00:00' para evitar issues de timezone UTC vs Local se necessário, 
+                    // mas split é mais seguro para string vs string.
+
+                    const dbDateString = aluno.data_nascimento.split('T')[0]; // Pega YYYY-MM-DD se for ISO
+                    const inputDateString = cleanNascimento;
+
+                    if (dbDateString === inputDateString) {
+                        isValidLogin = true;
+                    }
+                }
+
+                if (!aluno || !isValidLogin) {
                     toast.error('Matrícula ou data de nascimento inválida.');
                     setIsLoading(false);
                     return;
